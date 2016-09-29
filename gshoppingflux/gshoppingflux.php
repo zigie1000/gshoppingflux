@@ -1738,7 +1738,7 @@ class GShoppingFlux extends Module
 	{
 		$id_lang = (int)$this->context->language->id;
 		$id_shop = (int)Shop::getContextShopID();
-		$sql_filter = ';';
+		$sql_filter = '';
 		$sql_sort = '';
 		$sql_limit = '';
 
