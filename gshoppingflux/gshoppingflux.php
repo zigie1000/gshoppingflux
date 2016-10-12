@@ -2239,7 +2239,7 @@ class GShoppingFlux extends Module
 			$xml_googleshopping .= '<g:gtin>'.$product['ean13'].'</g:gtin>'."\n";
 			$identifier_exists++;
 		}
-		if (!empty($product['upc'])) {
+		else if (!empty($product['upc'])) {
 			$xml_googleshopping .= '<g:gtin>'.$product['upc'].'</g:gtin>'."\n";
 			$identifier_exists++;
 		}
