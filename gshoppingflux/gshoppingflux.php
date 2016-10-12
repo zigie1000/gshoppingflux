@@ -1975,9 +1975,9 @@ class GShoppingFlux extends Module
 		if (Configuration::get('PS_MULTISHOP_FEATURE_ACTIVE') && count(Shop::getShops(true, null, true)) > 1)
 			$sql .= ' AND `gc`.`id_shop` = '.$id_shop.' AND `pl`.`id_shop` = '.$id_shop.' AND `ps`.`id_shop` = '.$id_shop.' AND `gl`.`id_shop` = '.$id_shop;
 
-		// Check EAN13
+		// Check EAN13/UPC
 		if ($this->module_conf['no_gtin'] != 1)
-			$sql .= ' AND `p`.`ean13` != "" AND `p`.`ean13` != 0';
+			$sql .= ' AND ( (`p`.`ean13` != "" AND `p`.`ean13` != 0) OR (`p`.`upc` != "" AND `p`.`upc` != 0) )';
 
 		// Check BRAND
 		if ($this->module_conf['no_brand'] != 1)
@@ -2237,6 +2237,10 @@ class GShoppingFlux extends Module
 		// GTIN (EAN, UPC, JAN, ISBN)
 		if (!empty($product['ean13'])) {
 			$xml_googleshopping .= '<g:gtin>'.$product['ean13'].'</g:gtin>'."\n";
+			$identifier_exists++;
+		}
+		if (!empty($product['upc'])) {
+			$xml_googleshopping .= '<g:gtin>'.$product['upc'].'</g:gtin>'."\n";
 			$identifier_exists++;
 		}
 
