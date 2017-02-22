@@ -1662,7 +1662,7 @@ class GShoppingFlux extends Module
 				.(!$id_lang || (isset($groups) && Group::isFeatureActive()) ? ' GROUP BY c.`id_category`' : '')
 				.($sql_sort != '' ? $sql_sort : ' ORDER BY c.`level_depth` ASC')
 				.($sql_sort == '' && $use_shop_restriction ? ', cs.`position` ASC' : '')
-				.($sql_limit != '' ? $sql_limit : ' LIMIT 1;')			
+				.($sql_limit != '' ? $sql_limit : '')			
 			);
 
 			$attributes = $this->getShopAttributes($this->context->language->id, $this->context->shop->id);
