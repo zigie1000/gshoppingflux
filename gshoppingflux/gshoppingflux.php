@@ -2192,7 +2192,7 @@ class GShoppingFlux extends Module
         }
 
         $cat_link_rew = Category::getLinkRewrite($product['id_gcategory'], (int) $lang);
-        $product_link = $this->context->link->getProductLink((int) ($product['id_product']), $product['link_rewrite'], $cat_link_rew, $product['ean13'], (int) ($product['id_lang']), $id_shop, $combination, true);
+        $product_link = $this->context->link->getProductLink((int) ($product['id_product']), $product['link_rewrite'], $cat_link_rew, $product['ean13'], (int) ($product['id_lang']), $id_shop, $combination, null, null, true);
 
         // Product name
         $title_crop = $product['name'];
