@@ -20,54 +20,58 @@
 
 class GLangAndCurrency
 {
-	public static function getLangCurrencies($id_lang, $id_shop)
-	{
-		$ret = Db::getInstance()->executeS('SELECT glc.*, l.* '
-			 . 'FROM '._DB_PREFIX_.'gshoppingflux_lc glc '
-			 . 'INNER JOIN `'._DB_PREFIX_.'lang` l ON (l.id_lang = glc.id_glang)'
-			 . 'WHERE glc.id_glang IN (0, '.(int)$id_lang.') '
-			 . 'AND glc.id_shop IN (0, '.(int)$id_shop.');');
-		return $ret;
-	}
-	
-	public static function getAllLangCurrencies($active = false)
-	{
-		$ret = Db::getInstance()->executeS('SELECT glc.*, l.* FROM '._DB_PREFIX_.'gshoppingflux_lc glc '
-			 . 'INNER JOIN '._DB_PREFIX_.'lang l ON (glc.id_glang = l.id_lang)'
-			 . ($active ? ' WHERE l.`active` = 1' : ''));
-		return $ret;
-	}
+    public static function getLangCurrencies($id_lang, $id_shop)
+    {
+        $ret = Db::getInstance()->executeS('SELECT glc.*, l.* '
+             .'FROM '._DB_PREFIX_.'gshoppingflux_lc glc '
+             .'INNER JOIN `'._DB_PREFIX_.'lang` l ON (l.id_lang = glc.id_glang)'
+             .'WHERE glc.id_glang IN (0, '.(int) $id_lang.') '
+             .'AND glc.id_shop IN (0, '.(int) $id_shop.');');
 
-	public static function add($id_lang, $id_currency, $tax_included, $id_shop)
-	{
-		if(empty($id_lang) || empty($id_shop))
-			return false;
+        return $ret;
+    }
 
-		Db::getInstance()->insert('gshoppingflux_lc', array(
-			'id_glang'=>(int)$id_lang,
-			'id_currency' => $id_currency,
-			'tax_included' => $tax_included,
-			'id_shop' => (int)$id_shop
-			)
-		);
-	}
+    public static function getAllLangCurrencies($active = false)
+    {
+        $ret = Db::getInstance()->executeS('SELECT glc.*, l.* FROM '._DB_PREFIX_.'gshoppingflux_lc glc '
+             .'INNER JOIN '._DB_PREFIX_.'lang l ON (glc.id_glang = l.id_lang)'
+             .'WHERE 1 '.Shop::addSqlRestriction()
+             .($active ? ' AND l.`active` = 1' : ''));
 
-	public static function update($id_lang, $id_currency, $tax_included, $id_shop)
-	{
-		if(empty($id_lang) || empty($id_shop))
-			return false;
+        return $ret;
+    }
 
-		Db::getInstance()->update('gshoppingflux_lc', array(
-				'id_currency' => $id_currency,
-				'tax_included' => $tax_included
-			),
-			'id_glang = '.(int)$id_lang.' AND id_shop='.(int)$id_shop
-		);
-	}
+    public static function add($id_lang, $id_currency, $tax_included, $id_shop)
+    {
+        if (empty($id_lang) || empty($id_shop)) {
+            return false;
+        }
 
-	public static function remove($id_lang, $id_shop)
-	{
-		Db::getInstance()->delete('gshoppingflux_lc', 'id_glang = '.(int)$id_lang.' AND id_shop = '.(int)$id_shop);
-	}
+        Db::getInstance()->insert('gshoppingflux_lc', array(
+            'id_glang' => (int) $id_lang,
+            'id_currency' => $id_currency,
+            'tax_included' => $tax_included,
+            'id_shop' => (int) $id_shop,
+            )
+        );
+    }
 
+    public static function update($id_lang, $id_currency, $tax_included, $id_shop)
+    {
+        if (empty($id_lang) || empty($id_shop)) {
+            return false;
+        }
+
+        Db::getInstance()->update('gshoppingflux_lc', array(
+                'id_currency' => $id_currency,
+                'tax_included' => $tax_included,
+            ),
+            'id_glang = '.(int) $id_lang.' AND id_shop='.(int) $id_shop
+        );
+    }
+
+    public static function remove($id_lang, $id_shop)
+    {
+        Db::getInstance()->delete('gshoppingflux_lc', 'id_glang = '.(int) $id_lang.' AND id_shop = '.(int) $id_shop);
+    }
 }

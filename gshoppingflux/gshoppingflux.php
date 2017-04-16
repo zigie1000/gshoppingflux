@@ -290,8 +290,7 @@ class GShoppingFlux extends Module
         $shop_group_id = Shop::getGroupFromShop($shop_id);
 
         $gcategories = Tools::getValue('gcategory') ? array_filter(Tools::getValue('gcategory'), 'strlen') : array();
-
-        if (count($shops) > 1 && !isset($shop_id)) {
+        if (count($shops) > 1 && Shop::getContext() != 1) {
             $this->_html .= $this->getWarningMultishopHtml();
 
             return $this->_html;
@@ -1507,13 +1506,16 @@ class GShoppingFlux extends Module
             'languages' => $this->context->controller->getLanguages(),
         );
         $glangflux = GLangAndCurrency::getAllLangCurrencies(0);
-
         foreach ($glangflux as $k => $v) {
             $currencies = explode(';', $glangflux[$k]['id_currency']);
             $arrCurr = array();
             foreach ($currencies as $idc) {
                 $currency = new Currency($idc);
                 $arrCurr[] = $currency->iso_code;
+            }
+            if (Configuration::get('PS_MULTISHOP_FEATURE_ACTIVE')) {
+                $shop = Shop::getShop($glangflux[$k]['id_shop']);
+                $glangflux[$k]['shop_name'] = $shop['name'];
             }
             $glangflux[$k]['currency'] = implode(' - ', $arrCurr);
             if ($glangflux[$k]['tax_included'] == 1) {
@@ -1699,7 +1701,6 @@ class GShoppingFlux extends Module
         }
 
         $cache_id = 'Category::getNestedCategories_'.md5((int) $shop_id.(int) $root_category.(int) $id_lang.(int) $active.(int) $active.(isset($groups) && Group::isFeatureActive() ? implode('', $groups) : ''));
-
         if (!Cache::isStored($cache_id)) {
             $result = Db::getInstance()->executeS('
 				SELECT c.*, cl.`name` as gcat_name, g.*, gl.*, s.name as shop_name
