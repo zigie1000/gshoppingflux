@@ -1739,29 +1739,32 @@ class GShoppingFlux extends Module
 
                     $result[$k]['color'] = explode(';', $result[$k]['color']);
                     foreach ($result[$k]['color'] as $a => $v) {
-                        if (isset($attributes[$v - 1])) {
-                            $gid_colors[] = $attributes[$v - 1]['name'];
+                        $key = array_search($v, array_column($attributes, 'id_attribute_group'));
+                        if ($key !== false) {
+                            $gid_colors[] = $attributes[$key]['name'];
                         }
                     }
-
                     $result[$k]['material'] = explode(';', $result[$k]['material']);
                     foreach ($result[$k]['material'] as $a => $v) {
-                        if (isset($attributes[$v - 1])) {
-                            $gid_materials[] = $attributes[$v - 1]['name'];
+                        $key = array_search($v, array_column($attributes, 'id_attribute_group'));
+                        if ($key !== false) {
+                            $gid_materials[] = $attributes[$key]['name'];
                         }
                     }
 
                     $result[$k]['pattern'] = explode(';', $result[$k]['pattern']);
                     foreach ($result[$k]['pattern'] as $a => $v) {
-                        if (isset($attributes[$v - 1])) {
-                            $gid_patterns[] = $attributes[$v - 1]['name'];
+                        $key = array_search($v, array_column($attributes, 'id_attribute_group'));
+                        if ($key !== false) {
+                            $gid_patterns[] = $attributes[$key]['name'];
                         }
                     }
 
                     $result[$k]['size'] = explode(';', $result[$k]['size']);
                     foreach ($result[$k]['size'] as $a => $v) {
-                        if (isset($attributes[$v - 1])) {
-                            $gid_sizes[] = $attributes[$v - 1]['name'];
+                        $key = array_search($v, array_column($attributes, 'id_attribute_group'));
+                        if ($key !== false) {
+                            $gid_sizes[] = $attributes[$key]['name'];
                         }
                     }
 
