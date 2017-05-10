@@ -2099,6 +2099,10 @@ class GShoppingFlux extends Module
 
             //$xml_googleshopping = $this->getItemXML($product, $lang, $id_curr, $id_shop);
             //fwrite($googleshoppingfile, $xml_googleshopping);
+            $product['color'] = '';
+            $product['material'] = '';
+            $product['pattern'] = '';
+            $product['size'] = '';
 
             if (count($attributeCombinations) > 0 && $this->module_conf['export_attributes'] == 1) {
                 $attr = array();
@@ -2143,10 +2147,6 @@ class GShoppingFlux extends Module
                     $product['gid'] = $product['pid'].'-'.$combinum;
                     $xml_googleshopping = $this->getItemXML($product, $lang, $id_curr, $id_shop, $id_attr);
                     fwrite($googleshoppingfile, $xml_googleshopping);
-                    $product['color'] = '';
-                    $product['material'] = '';
-                    $product['pattern'] = '';
-                    $product['size'] = '';
                 }
             } else {
                 $xml_googleshopping = $this->getItemXML($product, $lang, $id_curr, $id_shop);
