@@ -2263,11 +2263,11 @@ class GShoppingFlux extends Module
         if ($image_type == '') {
             $image_type = 'large_default';
         }
-
-        foreach ($images as $im) {
+        $cover_key = array_search('1', array_column($images, 'cover'));
+        foreach ($images as $im_key => $im) {
             $image = $this->context->link->getImageLink($product['link_rewrite'], $product['id_product'].'-'.$im['id_image'], $image_type);
             $image = preg_replace('*http://'.Tools::getHttpHost().'/*', $this->uri, $image);
-            if ($im['cover'] == 1) {
+            if ($im['cover'] == 1 || ($cover_key === false && $im_key == 0)) {
                 $xml_googleshopping .= '<g:image_link><![CDATA['.$image.']]></g:image_link>'."\n";
             } else {
                 $xml_googleshopping .= '<g:additional_image_link><![CDATA['.$image.']]></g:additional_image_link>'."\n";
