@@ -73,6 +73,7 @@ class GShoppingFlux extends Module
             if ($delete_params) {
                 if (!Configuration::updateValue('GS_PRODUCT_TYPE', '', true, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_DESCRIPTION', 'short', false, (int) $shop_group_id, (int) $shop_id)
+                    || !Configuration::updateValue('GS_SHIPPING_PRICE_FIXED', '1', false, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_SHIPPING_PRICE', '0.00', false, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_SHIPPING_COUNTRY', 'UK', false, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_IMG_TYPE', 'large_default', false, (int) $shop_group_id, (int) $shop_id)
@@ -203,7 +204,7 @@ class GShoppingFlux extends Module
         }
 
         if ($delete_params) {
-            if (!$this->uninstallDB() || !Configuration::deleteByName('GS_PRODUCT_TYPE') || !Configuration::deleteByName('GS_DESCRIPTION') || !Configuration::deleteByName('GS_SHIPPING_PRICE') || !Configuration::deleteByName('GS_SHIPPING_COUNTRY') || !Configuration::deleteByName('GS_IMG_TYPE') || !Configuration::deleteByName('GS_MPN_TYPE') || !Configuration::deleteByName('GS_GENDER') || !Configuration::deleteByName('GS_AGE_GROUP') || !Configuration::deleteByName('GS_ATTRIBUTES') || !Configuration::deleteByName('GS_COLOR') || !Configuration::deleteByName('GS_MATERIAL') || !Configuration::deleteByName('GS_PATTERN') || !Configuration::deleteByName('GS_SIZE') || !Configuration::deleteByName('GS_EXPORT_MIN_PRICE') || !Configuration::deleteByName('GS_NO_GTIN') || !Configuration::deleteByName('GS_NO_BRAND') || !Configuration::deleteByName('GS_ID_EXISTS_TAG') || !Configuration::deleteByName('GS_EXPORT_NAP') || !Configuration::deleteByName('GS_QUANTITY') || !Configuration::deleteByName('GS_FEATURED_PRODUCTS') || !Configuration::deleteByName('GS_GEN_FILE_IN_ROOT')) {
+            if (!$this->uninstallDB() || !Configuration::deleteByName('GS_PRODUCT_TYPE') || !Configuration::deleteByName('GS_DESCRIPTION') || !Configuration::deleteByName('GS_SHIPPING_PRICE_FIXED') || !Configuration::deleteByName('GS_SHIPPING_PRICE') || !Configuration::deleteByName('GS_SHIPPING_COUNTRY') || !Configuration::deleteByName('GS_IMG_TYPE') || !Configuration::deleteByName('GS_MPN_TYPE') || !Configuration::deleteByName('GS_GENDER') || !Configuration::deleteByName('GS_AGE_GROUP') || !Configuration::deleteByName('GS_ATTRIBUTES') || !Configuration::deleteByName('GS_COLOR') || !Configuration::deleteByName('GS_MATERIAL') || !Configuration::deleteByName('GS_PATTERN') || !Configuration::deleteByName('GS_SIZE') || !Configuration::deleteByName('GS_EXPORT_MIN_PRICE') || !Configuration::deleteByName('GS_NO_GTIN') || !Configuration::deleteByName('GS_NO_BRAND') || !Configuration::deleteByName('GS_ID_EXISTS_TAG') || !Configuration::deleteByName('GS_EXPORT_NAP') || !Configuration::deleteByName('GS_QUANTITY') || !Configuration::deleteByName('GS_FEATURED_PRODUCTS') || !Configuration::deleteByName('GS_GEN_FILE_IN_ROOT')) {
                 return false;
             }
         }
@@ -310,6 +311,7 @@ class GShoppingFlux extends Module
 
             $updated &= Configuration::updateValue('GS_PRODUCT_TYPE', $product_type, false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_DESCRIPTION', Tools::getValue('description'), false, (int) $shop_group_id, (int) $shop_id);
+            $updated &= Configuration::updateValue('GS_SHIPPING_PRICE_FIXED', (bool) Tools::getValue('shipping_price_fixed'), false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_SHIPPING_PRICE', (float) Tools::getValue('shipping_price'), false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_SHIPPING_COUNTRY', Tools::getValue('shipping_country'), false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_IMG_TYPE', Tools::getValue('img_type'), false, (int) $shop_group_id, (int) $shop_id);
@@ -581,6 +583,24 @@ class GShoppingFlux extends Module
                             'query' => $descriptions,
                             'id' => 'id_desc',
                             'name' => 'name',
+                        ),
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('Use fixed shipping for all products?'),
+                        'name' => 'shipping_price_fixed',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Enabled'),
+                            ),
+                            array(
+                                'id' => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Disabled'),
+                            ),
                         ),
                     ),
                     array(
@@ -886,6 +906,7 @@ class GShoppingFlux extends Module
         $shop_group_id = Shop::getGroupFromShop($shop_id);
         $product_type = array();
         $description = 'short';
+        $shipping_price_fixed = true;
         $shipping_price = 0;
         $shipping_country = 'UK';
         $img_type = 'large_default';
@@ -912,6 +933,7 @@ class GShoppingFlux extends Module
         }
 
         $description = Configuration::get('GS_DESCRIPTION', 0, $shop_group_id, $shop_id);
+        $shipping_price_fixed &= (bool) Configuration::get('GS_SHIPPING_PRICE_FIXED', 0, $shop_group_id, $shop_id);
         $shipping_price = (float) Configuration::get('GS_SHIPPING_PRICE', 0, $shop_group_id, $shop_id);
         $shipping_country = Configuration::get('GS_SHIPPING_COUNTRY', 0, $shop_group_id, $shop_id);
         $img_type = Configuration::get('GS_IMG_TYPE', 0, $shop_group_id, $shop_id);
@@ -936,6 +958,7 @@ class GShoppingFlux extends Module
         return array(
             'product_type[]' => $product_type,
             'description' => $description,
+            'shipping_price_fixed' => (int) $shipping_price_fixed,
             'shipping_price' => (float) $shipping_price,
             'shipping_country' => $shipping_country,
             'img_type' => $img_type,
@@ -2462,11 +2485,13 @@ class GShoppingFlux extends Module
         }
 
         // Shipping
-        $xml_googleshopping .= '<g:shipping>'."\n";
-        $xml_googleshopping .= "\t".'<g:country>'.$this->module_conf['shipping_country'].'</g:country>'."\n";
-        $xml_googleshopping .= "\t".'<g:service>Standard</g:service>'."\n";
-        $xml_googleshopping .= "\t".'<g:price>'.number_format($this->module_conf['shipping_price'], 2, '.', ' ').' '.$currency->iso_code.'</g:price>'."\n";
-        $xml_googleshopping .= '</g:shipping>'."\n";
+        if ($this->module_conf[shipping_price_fixed]) {
+            $xml_googleshopping .= '<g:shipping>'."\n";
+            $xml_googleshopping .= "\t".'<g:country>'.$this->module_conf['shipping_country'].'</g:country>'."\n";
+            $xml_googleshopping .= "\t".'<g:service>Standard</g:service>'."\n";
+            $xml_googleshopping .= "\t".'<g:price>'.number_format($this->module_conf['shipping_price'], 2, '.', ' ').' '.$currency->iso_code.'</g:price>'."\n";
+            $xml_googleshopping .= '</g:shipping>'."\n";
+        }
 
         // Shipping weight
         if ($product['weight'] != '0') {
