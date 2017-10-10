@@ -2485,7 +2485,7 @@ class GShoppingFlux extends Module
         }
 
         // Shipping
-        if ($this->module_conf[shipping_price_fixed]) {
+        if ($this->module_conf['shipping_price_fixed']) {
             $xml_googleshopping .= '<g:shipping>'."\n";
             $xml_googleshopping .= "\t".'<g:country>'.$this->module_conf['shipping_country'].'</g:country>'."\n";
             $xml_googleshopping .= "\t".'<g:service>Standard</g:service>'."\n";
