@@ -34,7 +34,7 @@ class GShoppingFlux extends Module
     {
         $this->name = 'gshoppingflux';
         $this->tab = 'smart_shopping';
-        $this->version = '1.6.7';
+        $this->version = '1.7.0-dev';
         $this->author = 'Dim00z';
 
         $this->bootstrap = true;
@@ -74,9 +74,11 @@ class GShoppingFlux extends Module
             if ($delete_params) {
                 if (!Configuration::updateValue('GS_PRODUCT_TYPE', '', true, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_DESCRIPTION', 'short', false, (int) $shop_group_id, (int) $shop_id)
+                    || !Configuration::updateValue('GS_SHIPPING_MODE', 'fixed', false, (int)$shop_group_id, (int)$shop_id)
                     || !Configuration::updateValue('GS_SHIPPING_PRICE_FIXED', '1', false, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_SHIPPING_PRICE', '0.00', false, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_SHIPPING_COUNTRY', 'UK', false, (int) $shop_group_id, (int) $shop_id)
+                    || !Configuration::updateValue('GS_SHIPPING_COUNTRIES', '0', false, (int)$shop_group_id, (int)$shop_id)
                     || !Configuration::updateValue('GS_IMG_TYPE', 'large_default', false, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_MPN_TYPE', 'reference', false, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_GENDER', '', false, (int) $shop_group_id, (int) $shop_id)
@@ -205,7 +207,7 @@ class GShoppingFlux extends Module
         }
 
         if ($delete_params) {
-            if (!$this->uninstallDB() || !Configuration::deleteByName('GS_PRODUCT_TYPE') || !Configuration::deleteByName('GS_DESCRIPTION') || !Configuration::deleteByName('GS_SHIPPING_PRICE_FIXED') || !Configuration::deleteByName('GS_SHIPPING_PRICE') || !Configuration::deleteByName('GS_SHIPPING_COUNTRY') || !Configuration::deleteByName('GS_IMG_TYPE') || !Configuration::deleteByName('GS_MPN_TYPE') || !Configuration::deleteByName('GS_GENDER') || !Configuration::deleteByName('GS_AGE_GROUP') || !Configuration::deleteByName('GS_ATTRIBUTES') || !Configuration::deleteByName('GS_COLOR') || !Configuration::deleteByName('GS_MATERIAL') || !Configuration::deleteByName('GS_PATTERN') || !Configuration::deleteByName('GS_SIZE') || !Configuration::deleteByName('GS_EXPORT_MIN_PRICE') || !Configuration::deleteByName('GS_NO_GTIN') || !Configuration::deleteByName('GS_NO_BRAND') || !Configuration::deleteByName('GS_ID_EXISTS_TAG') || !Configuration::deleteByName('GS_EXPORT_NAP') || !Configuration::deleteByName('GS_QUANTITY') || !Configuration::deleteByName('GS_FEATURED_PRODUCTS') || !Configuration::deleteByName('GS_GEN_FILE_IN_ROOT')) {
+            if (!$this->uninstallDB() || !Configuration::deleteByName('GS_PRODUCT_TYPE') || !Configuration::deleteByName('GS_DESCRIPTION') || !Configuration::deleteByName('GS_SHIPPING_MODE') || !Configuration::deleteByName('GS_SHIPPING_PRICE') || !Configuration::deleteByName('GS_SHIPPING_COUNTRY') || !Configuration::deleteByName('GS_SHIPPING_COUNTRIES') || !Configuration::deleteByName('GS_IMG_TYPE') || !Configuration::deleteByName('GS_MPN_TYPE') || !Configuration::deleteByName('GS_GENDER') || !Configuration::deleteByName('GS_AGE_GROUP') || !Configuration::deleteByName('GS_ATTRIBUTES') || !Configuration::deleteByName('GS_COLOR') || !Configuration::deleteByName('GS_MATERIAL') || !Configuration::deleteByName('GS_PATTERN') || !Configuration::deleteByName('GS_SIZE') || !Configuration::deleteByName('GS_EXPORT_MIN_PRICE') || !Configuration::deleteByName('GS_NO_GTIN') || !Configuration::deleteByName('GS_NO_BRAND') || !Configuration::deleteByName('GS_ID_EXISTS_TAG') || !Configuration::deleteByName('GS_EXPORT_NAP') || !Configuration::deleteByName('GS_QUANTITY') || !Configuration::deleteByName('GS_FEATURED_PRODUCTS') || !Configuration::deleteByName('GS_GEN_FILE_IN_ROOT')) {
                 return false;
             }
         }
@@ -312,9 +314,10 @@ class GShoppingFlux extends Module
 
             $updated &= Configuration::updateValue('GS_PRODUCT_TYPE', $product_type, false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_DESCRIPTION', Tools::getValue('description'), false, (int) $shop_group_id, (int) $shop_id);
-            $updated &= Configuration::updateValue('GS_SHIPPING_PRICE_FIXED', (bool) Tools::getValue('shipping_price_fixed'), false, (int) $shop_group_id, (int) $shop_id);
+            $updated &= Configuration::updateValue('GS_SHIPPING_MODE', Tools::getValue('shipping_mode'), false, (int)$shop_group_id, (int)$shop_id);
             $updated &= Configuration::updateValue('GS_SHIPPING_PRICE', (float) Tools::getValue('shipping_price'), false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_SHIPPING_COUNTRY', Tools::getValue('shipping_country'), false, (int) $shop_group_id, (int) $shop_id);
+            $updated &= Configuration::updateValue('GS_SHIPPING_COUNTRIES', implode(';', Tools::getValue('shipping_countries')), false, (int)$shop_group_id, (int)$shop_id);
             $updated &= Configuration::updateValue('GS_IMG_TYPE', Tools::getValue('img_type'), false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_MPN_TYPE', Tools::getValue('mpn_type'), false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_GENDER', Tools::getValue('gender'), false, (int) $shop_group_id, (int) $shop_id);
@@ -587,21 +590,26 @@ class GShoppingFlux extends Module
                         ),
                     ),
                     array(
-                        'type' => 'switch',
-                        'label' => $this->l('Use fixed shipping for all products?'),
-                        'name' => 'shipping_price_fixed',
-                        'is_bool' => true,
-                        'values' => array(
-                            array(
-                                'id' => 'active_on',
-                                'value' => 1,
-                                'label' => $this->l('Enabled'),
+                        'type' => 'select',
+                        'label' => $this->l('Shipping Methods'),
+                        'name' => 'shipping_mode',
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_mode' => 'none',
+                                    'name' => $this->l('No shipping method'),
+                                ),
+                                array(
+                                    'id_mode' => 'fixed',
+                                    'name' => $this->l('Price fixed'),
+                                ),
+                                array(
+                                    'id_mode' => 'full',
+                                    'name' => $this->l('Generate shipping costs in several countries'),
+                                ),
                             ),
-                            array(
-                                'id' => 'active_off',
-                                'value' => 0,
-                                'label' => $this->l('Disabled'),
-                            ),
+                            'id' => 'id_mode',
+                            'name' => 'name',
                         ),
                     ),
                     array(
@@ -610,6 +618,7 @@ class GShoppingFlux extends Module
                         'name' => 'shipping_price',
                         'class' => 'fixed-width-xs',
                         'prefix' => $this->context->currency->sign,
+                        'desc' => $this->l('This field is used for "Price fixed".'),
                     ),
                     array(
                         'type' => 'text',
@@ -617,6 +626,24 @@ class GShoppingFlux extends Module
                         'name' => 'shipping_country',
                         'class' => 'fixed-width-xs',
                         //'suffix' => strtoupper($this->context->language->iso_code),
+                        'desc' => $this->l('This field is used for "Price fixed".'),
+                    ),
+                    array(
+                        'type' => 'select',
+                        'multiple' => TRUE,
+                        'label' => $this->l('Shipping countries'),
+                        'name' => 'shipping_countries[]',
+                        'options' => array(
+                            'query' => array_merge(array(
+                                array(
+                                    'id_country' => 'all',
+                                    'name' => $this->l('All'),
+                                ),
+                            ), Country::getCountries($this->context->language->id, TRUE)),
+                            'id' => 'id_country',
+                            'name' => 'name',
+                        ),
+                        'desc' => $this->l('This field is used for "Generate shipping costs in several countries". Hold [Ctrl] key pressed to select multiple country.'),
                     ),
                     array(
                         'type' => 'select',
@@ -908,8 +935,10 @@ class GShoppingFlux extends Module
         $product_type = array();
         $description = 'short';
         $shipping_price_fixed = true;
+        $shipping_mode = 'fixed';
         $shipping_price = 0;
         $shipping_country = 'UK';
+        $shipping_countries = 'all';
         $img_type = 'large_default';
         $mpn_type = '';
         $gender = '';
@@ -934,9 +963,11 @@ class GShoppingFlux extends Module
         }
 
         $description = Configuration::get('GS_DESCRIPTION', 0, $shop_group_id, $shop_id);
+        $shipping_mode = Configuration::get('GS_SHIPPING_MODE', 0, $shop_group_id, $shop_id);
         $shipping_price_fixed &= (bool) Configuration::get('GS_SHIPPING_PRICE_FIXED', 0, $shop_group_id, $shop_id);
         $shipping_price = (float) Configuration::get('GS_SHIPPING_PRICE', 0, $shop_group_id, $shop_id);
         $shipping_country = Configuration::get('GS_SHIPPING_COUNTRY', 0, $shop_group_id, $shop_id);
+        $shipping_countries = explode(';', Configuration::get('GS_SHIPPING_COUNTRIES', 0, $shop_group_id, $shop_id));
         $img_type = Configuration::get('GS_IMG_TYPE', 0, $shop_group_id, $shop_id);
         $mpn_type = Configuration::get('GS_MPN_TYPE', 0, $shop_group_id, $shop_id);
         $gender = Configuration::get('GS_GENDER', 0, $shop_group_id, $shop_id);
@@ -959,9 +990,11 @@ class GShoppingFlux extends Module
         return array(
             'product_type[]' => $product_type,
             'description' => $description,
+            'shipping_mode' => $shipping_mode,
             'shipping_price_fixed' => (int) $shipping_price_fixed,
             'shipping_price' => (float) $shipping_price,
             'shipping_country' => $shipping_country,
+            'shipping_countries[]' => $shipping_countries,
             'img_type' => $img_type,
             'mpn_type' => $mpn_type,
             'gender' => $gender,
@@ -2486,12 +2519,56 @@ class GShoppingFlux extends Module
         }
 
         // Shipping
-        if ($this->module_conf['shipping_price_fixed']) {
-            $xml_googleshopping .= '<g:shipping>'."\n";
-            $xml_googleshopping .= "\t".'<g:country>'.$this->module_conf['shipping_country'].'</g:country>'."\n";
-            $xml_googleshopping .= "\t".'<g:service>Standard</g:service>'."\n";
-            $xml_googleshopping .= "\t".'<g:price>'.number_format($this->module_conf['shipping_price'], 2, '.', ' ').' '.$currency->iso_code.'</g:price>'."\n";
-            $xml_googleshopping .= '</g:shipping>'."\n";
+        if ($this->module_conf['shipping_mode'] == 'fixed') {
+            $xml_googleshopping .= '<g:shipping>' . "\n";
+            $xml_googleshopping .= "\t" . '<g:country>' . $this->module_conf['shipping_country'] . '</g:country>' . "\n";
+            $xml_googleshopping .= "\t" . '<g:service>Standard</g:service>' . "\n";
+            $xml_googleshopping .= "\t" . '<g:price>' . number_format($this->module_conf['shipping_price'], 2, '.', ' ') . ' ' . $currency->iso_code . '</g:price>' . "\n";
+            $xml_googleshopping .= '</g:shipping>' . "\n";
+        } else if ($this->module_conf['shipping_mode'] == 'full' && count($this->module_conf['shipping_countries[]'])) {
+            // Init Cart for calculate shipping costs
+            $cart = new Cart();
+            $cart->id_currency = $this->context->currency->id;
+            $cart->id_lang = $this->context->language->id;
+            $cart->add();
+            $cart->updateQty(1, $product['id_product']);
+
+            $countries = [];
+            if (in_array('all', $this->module_conf['shipping_countries[]'])) {
+                $countries = Country::getCountries($this->context->language->id, TRUE);
+            } else {
+                foreach ($this->module_conf['shipping_countries[]'] as $id_country) {
+                    $countries[] = (new Country((int)$id_country))->getFields();
+                }
+            }
+
+            // optimize performance by grouping by zone
+            $zones = [];
+            foreach ($countries as $country) {
+                $zones[$country['id_zone']][] = $country;
+            }
+            unset($countries);
+
+            foreach ($zones as $id_zone => $countries) {
+                $shipping = array_reduce(Carrier::getCarriersForOrder($id_zone, NULL, $cart), function ($a, $b) {
+                    if ($a === NULL) {
+                        return $b;
+                    } else {
+                        return ($a['price'] > $b['price']) ? $b : $a;
+                    }
+                });
+
+                foreach ($countries as $country) {
+                    $xml_googleshopping .= '<g:shipping>' . "\n";
+                    $xml_googleshopping .= "\t" . '<g:country>' . $country['iso_code'] . '</g:country>' . "\n";
+                    $xml_googleshopping .= "\t" . '<g:service>' . $shipping['delay'] . '</g:service>' . "\n";
+                    $xml_googleshopping .= "\t" . '<g:price>' . number_format($shipping['price'], 2, '.', ' ') . ' ' . $currency->iso_code . '</g:price>' . "\n";
+                    $xml_googleshopping .= '</g:shipping>' . "\n";
+                }
+            }
+
+            $cart->delete();
+            unset($cart);
         }
 
         // Shipping weight
