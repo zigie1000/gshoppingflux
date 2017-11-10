@@ -2129,6 +2129,7 @@ class GShoppingFlux extends Module
             $product['size'] = '';
 
             if (count($attributeCombinations) > 0 && $this->module_conf['export_attributes'] == 1) {
+                $original_product = $product;
                 $attr = array();
                 foreach ($attributeCombinations as $a => $attribute) {
                     $attr[$attribute['id_product_attribute']][$attribute['id_attribute_group']] = $attribute;
@@ -2136,6 +2137,7 @@ class GShoppingFlux extends Module
 
                 $combinum = 0;
                 foreach ($attr as $id_attr => $v) {
+                    $product = $original_product;
                     foreach ($v as $k => $a) {
                         foreach ($this->categories_values[$product['id_gcategory']]['gcat_color[]'] as $c) {
                             if ($k == $c) {
@@ -2158,7 +2160,11 @@ class GShoppingFlux extends Module
                             }
                         }
                         foreach ($a as $k => $v) {
-                            $product[$k] = $v;
+                            if ($k === 'weight') {
+                                $product[$k] += $v;
+                            } else {
+                                $product[$k] = $v;
+                            }
                         }
                     }
 
@@ -2168,6 +2174,7 @@ class GShoppingFlux extends Module
                     $xml_googleshopping = $this->getItemXML($product, $lang, $id_curr, $id_shop, $id_attr);
                     fwrite($googleshoppingfile, $xml_googleshopping);
                 }
+                unset($original_product);
             } else {
                 $xml_googleshopping = $this->getItemXML($product, $lang, $id_curr, $id_shop);
                 fwrite($googleshoppingfile, $xml_googleshopping);
