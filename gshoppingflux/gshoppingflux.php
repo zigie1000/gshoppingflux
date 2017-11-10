@@ -34,7 +34,7 @@ class GShoppingFlux extends Module
     {
         $this->name = 'gshoppingflux';
         $this->tab = 'smart_shopping';
-        $this->version = '1.6.7';
+        $this->version = '1.6.7-dev';
         $this->author = 'Dim00z';
 
         $this->bootstrap = true;
@@ -2160,10 +2160,6 @@ class GShoppingFlux extends Module
                         foreach ($a as $k => $v) {
                             $product[$k] = $v;
                         }
-                    }
-
-                    if (empty($product['color']) && empty($product['material']) && empty($product['pattern']) && empty($product['size'])) {
-                        continue 2;
                     }
 
                     ++$combinum;
