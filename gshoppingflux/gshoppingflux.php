@@ -79,6 +79,7 @@ class GShoppingFlux extends Module
                     || !Configuration::updateValue('GS_SHIPPING_PRICE', '0.00', false, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_SHIPPING_COUNTRY', 'UK', false, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_SHIPPING_COUNTRIES', '0', false, (int)$shop_group_id, (int)$shop_id)
+                    || !Configuration::updateValue('GS_CARRIERS_EXCLUDED', '0', false, (int)$shop_group_id, (int)$shop_id)
                     || !Configuration::updateValue('GS_IMG_TYPE', 'large_default', false, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_MPN_TYPE', 'reference', false, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_GENDER', '', false, (int) $shop_group_id, (int) $shop_id)
@@ -207,7 +208,7 @@ class GShoppingFlux extends Module
         }
 
         if ($delete_params) {
-            if (!$this->uninstallDB() || !Configuration::deleteByName('GS_PRODUCT_TYPE') || !Configuration::deleteByName('GS_DESCRIPTION') || !Configuration::deleteByName('GS_SHIPPING_MODE') || !Configuration::deleteByName('GS_SHIPPING_PRICE') || !Configuration::deleteByName('GS_SHIPPING_COUNTRY') || !Configuration::deleteByName('GS_SHIPPING_COUNTRIES') || !Configuration::deleteByName('GS_IMG_TYPE') || !Configuration::deleteByName('GS_MPN_TYPE') || !Configuration::deleteByName('GS_GENDER') || !Configuration::deleteByName('GS_AGE_GROUP') || !Configuration::deleteByName('GS_ATTRIBUTES') || !Configuration::deleteByName('GS_COLOR') || !Configuration::deleteByName('GS_MATERIAL') || !Configuration::deleteByName('GS_PATTERN') || !Configuration::deleteByName('GS_SIZE') || !Configuration::deleteByName('GS_EXPORT_MIN_PRICE') || !Configuration::deleteByName('GS_NO_GTIN') || !Configuration::deleteByName('GS_NO_BRAND') || !Configuration::deleteByName('GS_ID_EXISTS_TAG') || !Configuration::deleteByName('GS_EXPORT_NAP') || !Configuration::deleteByName('GS_QUANTITY') || !Configuration::deleteByName('GS_FEATURED_PRODUCTS') || !Configuration::deleteByName('GS_GEN_FILE_IN_ROOT')) {
+            if (!$this->uninstallDB() || !Configuration::deleteByName('GS_PRODUCT_TYPE') || !Configuration::deleteByName('GS_DESCRIPTION') || !Configuration::deleteByName('GS_SHIPPING_MODE') || !Configuration::deleteByName('GS_SHIPPING_PRICE') || !Configuration::deleteByName('GS_SHIPPING_COUNTRY') || !Configuration::deleteByName('GS_SHIPPING_COUNTRIES') || !Configuration::deleteByName('GS_CARRIERS_EXCLUDED') || !Configuration::deleteByName('GS_IMG_TYPE') || !Configuration::deleteByName('GS_MPN_TYPE') || !Configuration::deleteByName('GS_GENDER') || !Configuration::deleteByName('GS_AGE_GROUP') || !Configuration::deleteByName('GS_ATTRIBUTES') || !Configuration::deleteByName('GS_COLOR') || !Configuration::deleteByName('GS_MATERIAL') || !Configuration::deleteByName('GS_PATTERN') || !Configuration::deleteByName('GS_SIZE') || !Configuration::deleteByName('GS_EXPORT_MIN_PRICE') || !Configuration::deleteByName('GS_NO_GTIN') || !Configuration::deleteByName('GS_NO_BRAND') || !Configuration::deleteByName('GS_ID_EXISTS_TAG') || !Configuration::deleteByName('GS_EXPORT_NAP') || !Configuration::deleteByName('GS_QUANTITY') || !Configuration::deleteByName('GS_FEATURED_PRODUCTS') || !Configuration::deleteByName('GS_GEN_FILE_IN_ROOT')) {
                 return false;
             }
         }
@@ -318,6 +319,7 @@ class GShoppingFlux extends Module
             $updated &= Configuration::updateValue('GS_SHIPPING_PRICE', (float) Tools::getValue('shipping_price'), false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_SHIPPING_COUNTRY', Tools::getValue('shipping_country'), false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_SHIPPING_COUNTRIES', implode(';', Tools::getValue('shipping_countries')), false, (int)$shop_group_id, (int)$shop_id);
+            $updated &= Configuration::updateValue('GS_CARRIERS_EXCLUDED', implode(';', Tools::getValue('carriers_excluded')), false, (int)$shop_group_id, (int)$shop_id);
             $updated &= Configuration::updateValue('GS_IMG_TYPE', Tools::getValue('img_type'), false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_MPN_TYPE', Tools::getValue('mpn_type'), false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_GENDER', Tools::getValue('gender'), false, (int) $shop_group_id, (int) $shop_id);
@@ -647,6 +649,23 @@ class GShoppingFlux extends Module
                     ),
                     array(
                         'type' => 'select',
+                        'multiple' => TRUE,
+                        'label' => $this->l('Carriers to exclude'),
+                        'name' => 'carriers_excluded[]',
+                        'options' => array(
+                            'query' => array_merge(array(
+                                array(
+                                    'id_carrier' => 'no',
+                                    'name' => $this->l('No'),
+                                ),
+                            ), Carrier::getCarriers($this->context->language->id)),
+                            'id' => 'id_carrier',
+                            'name' => 'name',
+                        ),
+                        'desc' => $this->l('This field is used for "Generate shipping costs in several countries". Hold [Ctrl] key pressed to select multiple carriers.'),
+                    ),
+                    array(
+                        'type' => 'select',
                         'label' => $this->l('Images type'),
                         'name' => 'img_type',
                         'default_value' => $helper->tpl_vars['fields_value']['img_type'],
@@ -968,6 +987,7 @@ class GShoppingFlux extends Module
         $shipping_price = (float) Configuration::get('GS_SHIPPING_PRICE', 0, $shop_group_id, $shop_id);
         $shipping_country = Configuration::get('GS_SHIPPING_COUNTRY', 0, $shop_group_id, $shop_id);
         $shipping_countries = explode(';', Configuration::get('GS_SHIPPING_COUNTRIES', 0, $shop_group_id, $shop_id));
+        $carriers_excluded = explode(';', Configuration::get('GS_CARRIERS_EXCLUDED', 0, $shop_group_id, $shop_id));
         $img_type = Configuration::get('GS_IMG_TYPE', 0, $shop_group_id, $shop_id);
         $mpn_type = Configuration::get('GS_MPN_TYPE', 0, $shop_group_id, $shop_id);
         $gender = Configuration::get('GS_GENDER', 0, $shop_group_id, $shop_id);
@@ -995,6 +1015,7 @@ class GShoppingFlux extends Module
             'shipping_price' => (float) $shipping_price,
             'shipping_country' => $shipping_country,
             'shipping_countries[]' => $shipping_countries,
+            'carriers_excluded[]' => $carriers_excluded,
             'img_type' => $img_type,
             'mpn_type' => $mpn_type,
             'gender' => $gender,
@@ -2553,7 +2574,15 @@ class GShoppingFlux extends Module
             unset($countries);
 
             foreach ($zones as $id_zone => $countries) {
-                $shipping = array_reduce(Carrier::getCarriersForOrder($id_zone, NULL, $cart), function ($a, $b) {
+                $carriers = Carrier::getCarriersForOrder($id_zone, NULL, $cart);
+                $carriers_excluded = $this->module_conf['carriers_excluded[]'];
+
+                if (!empty($carriers_excluded) && !in_array('no', $carriers_excluded)) {
+                    $carriers = array_filter($carriers, function ($carrier) use ($carriers_excluded) {
+                        return !in_array($carrier['id_carrier'], $carriers_excluded);
+                    });
+                }
+                $shipping = array_reduce($carriers, function ($a, $b) {
                     if ($a === NULL) {
                         return $b;
                     } else {
