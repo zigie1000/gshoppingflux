@@ -59,6 +59,7 @@ class GShoppingFlux extends Module
             || !$this->registerHook('actionObjectCategoryAddAfter')
             || !$this->registerHook('actionObjectCategoryDeleteAfter')
             || !$this->registerHook('actionShopDataDuplication')
+            || !$this->registerHook('actionCarrierUpdate')
             || !$this->installDb()) {
             return false;
         }
@@ -283,6 +284,20 @@ class GShoppingFlux extends Module
                         'gcategory' => (int) $l['gcategory'],
                 ));
             }
+        }
+    }
+
+    public function hookActionCarrierUpdate($params)
+    {
+        $shop_id = $this->context->shop->id;
+        $shop_group_id = Shop::getGroupFromShop($shop_id);
+        $id_carrier_old = (int)($params['id_carrier']);
+        $id_carrier_new = (int)($params['carrier']->id);
+        $carriers_excluded = explode(';', Configuration::get('GS_CARRIERS_EXCLUDED', 0, $shop_group_id, $shop_id));
+        if ($key = array_search($id_carrier_old, $carriers_excluded) !== false) {
+            unset($carriers_excluded[$key]);
+            array_push($carriers_excluded, $id_carrier_new);
+            Configuration::updateValue('GS_CARRIERS_EXCLUDED', implode(';', $carriers_excluded), false, (int)$shop_group_id, (int)$shop_id);
         }
     }
 
