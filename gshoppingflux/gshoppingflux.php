@@ -2343,6 +2343,9 @@ class GShoppingFlux extends Module
 
         // Image links
         $images = Image::getImages($lang['id_lang'], $product['id_product'], $combination);
+        if (count($images) == 0 && $combination != false) {
+            $images = Image::getImages($lang['id_lang'], $product['id_product']);
+        }
         $indexTabLang = 0;
         if ($tailleTabLang > 1) {
             while (sizeof($images) < 1 && $indexTabLang < $tailleTabLang) {
