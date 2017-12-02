@@ -2609,7 +2609,7 @@ class GShoppingFlux extends Module
                     $xml_googleshopping .= '<g:shipping>' . "\n";
                     $xml_googleshopping .= "\t" . '<g:country>' . $country['iso_code'] . '</g:country>' . "\n";
                     $xml_googleshopping .= "\t" . '<g:service>' . $shipping['delay'] . '</g:service>' . "\n";
-                    $xml_googleshopping .= "\t" . '<g:price>' . number_format($shipping['price'], 2, '.', ' ') . ' ' . $currency->iso_code . '</g:price>' . "\n";
+                    $xml_googleshopping .= "\t" . '<g:price>' . Tools::ps_round($shipping['price'], _PS_PRICE_COMPUTE_PRECISION_) . ' ' . $currency->iso_code . '</g:price>' . "\n";
                     $xml_googleshopping .= '</g:shipping>' . "\n";
                 }
             }
