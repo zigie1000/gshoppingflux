@@ -2140,7 +2140,7 @@ class GShoppingFlux extends Module
         // File header
         fwrite($googleshoppingfile, $xml);
 
-        $sql = 'SELECT DISTINCT p.*, pl.*, ps.id_category_default as category_default, gc.*, glc.tax_included, gl.* '
+        $sql = 'SELECT DISTINCT p.*, pl.*, ps.id_category_default as category_default, gc.export, glc.tax_included, gl.* '
             .'FROM '._DB_PREFIX_.'product p '
             .'INNER JOIN '._DB_PREFIX_.'product_lang pl ON pl.id_product = p.id_product '
             .'INNER JOIN '._DB_PREFIX_.'product_shop ps ON ps.id_product = p.id_product '
