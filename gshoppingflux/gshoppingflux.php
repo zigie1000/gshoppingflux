@@ -2432,8 +2432,8 @@ class GShoppingFlux extends Module
         $no_tax = (!$use_tax ? true : false);
         $product['price'] = (float) $p->getPriceStatic($product['id_product'], $use_tax, $combination) * $currency->conversion_rate;
         $product['price_without_reduct'] = (float) $p->getPriceWithoutReduct($no_tax, $combination) * $currency->conversion_rate;
-        $product['price'] = $product['price'] = Tools::ps_round($product['price'], _PS_PRICE_COMPUTE_PRECISION_);
-        $product['price_without_reduct'] = Tools::ps_round($product['price_without_reduct'], _PS_PRICE_COMPUTE_PRECISION_);
+        $product['price'] = $product['price'] = Tools::ps_round($product['price'], _PS_PRICE_DISPLAY_PRECISION_);
+        $product['price_without_reduct'] = Tools::ps_round($product['price_without_reduct'], _PS_PRICE_DISPLAY_PRECISION_);
         if ((float) ($product['price']) < (float) ($product['price_without_reduct'])) {
             $xml_googleshopping .= '<g:price>'.$product['price_without_reduct'].' '.$currency->iso_code.'</g:price>'."\n";
             $xml_googleshopping .= '<g:sale_price>'.$product['price'].' '.$currency->iso_code.'</g:sale_price>'."\n";
@@ -2565,9 +2565,9 @@ class GShoppingFlux extends Module
             $xml_googleshopping .= '<g:shipping>' . "\n";
             $xml_googleshopping .= "\t" . '<g:country>' . $this->module_conf['shipping_country'] . '</g:country>' . "\n";
             $xml_googleshopping .= "\t" . '<g:service>Standard</g:service>' . "\n";
-            $xml_googleshopping .= "\t" . '<g:price>' . Tools::ps_round($this->module_conf['shipping_price'], _PS_PRICE_COMPUTE_PRECISION_) . ' ' . $currency->iso_code . '</g:price>' . "\n";
+            $xml_googleshopping .= "\t" . '<g:price>' . Tools::ps_round($this->module_conf['shipping_price'], _PS_PRICE_DISPLAY_PRECISION_) . ' ' . $currency->iso_code . '</g:price>' . "\n";
             $xml_googleshopping .= '</g:shipping>' . "\n";
-        } else if ($this->module_conf['shipping_mode'] == 'full' && count($this->module_conf['shipping_countries[]'])) {
+        } elseif ($this->module_conf['shipping_mode'] == 'full' && count($this->module_conf['shipping_countries[]'])) {
             // Init Cart for calculate shipping costs
             $cart = new Cart();
             $cart->id_currency = $this->context->currency->id;
@@ -2612,7 +2612,7 @@ class GShoppingFlux extends Module
                     $xml_googleshopping .= '<g:shipping>' . "\n";
                     $xml_googleshopping .= "\t" . '<g:country>' . $country['iso_code'] . '</g:country>' . "\n";
                     $xml_googleshopping .= "\t" . '<g:service>' . $shipping['delay'] . '</g:service>' . "\n";
-                    $xml_googleshopping .= "\t" . '<g:price>' . Tools::ps_round($shipping['price'], _PS_PRICE_COMPUTE_PRECISION_) . ' ' . $currency->iso_code . '</g:price>' . "\n";
+                    $xml_googleshopping .= "\t" . '<g:price>' . Tools::ps_round($shipping['price'], _PS_PRICE_DISPLAY_PRECISION_) . ' ' . $currency->iso_code . '</g:price>' . "\n";
                     $xml_googleshopping .= '</g:shipping>' . "\n";
                 }
             }
