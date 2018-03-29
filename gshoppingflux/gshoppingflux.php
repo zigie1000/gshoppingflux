@@ -2010,10 +2010,10 @@ class GShoppingFlux extends Module
             $this->categories_values[$cat['id_category']]['gcat_avail'] = $availability;
             $this->categories_values[$cat['id_category']]['gcat_gender'] = $gender;
             $this->categories_values[$cat['id_category']]['gcat_age_group'] = $age_group;
-            $this->categories_values[$cat['id_category']]['gcat_color[]'] = explode(';', $color);
-            $this->categories_values[$cat['id_category']]['gcat_material[]'] = explode(';', $material);
-            $this->categories_values[$cat['id_category']]['gcat_pattern[]'] = explode(';', $pattern);
-            $this->categories_values[$cat['id_category']]['gcat_size[]'] = explode(';', $size);
+            $this->categories_values[$cat['id_category']]['gcat_color'] = explode(';', $color);
+            $this->categories_values[$cat['id_category']]['gcat_material'] = explode(';', $material);
+            $this->categories_values[$cat['id_category']]['gcat_pattern'] = explode(';', $pattern);
+            $this->categories_values[$cat['id_category']]['gcat_size'] = explode(';', $size);
         }
     }
 
@@ -2178,7 +2178,7 @@ class GShoppingFlux extends Module
 
             $attributeCombinations = null;
             if ($this->module_conf['export_attributes'] == 1) {
-                $attributeCombinations = $p->getAttributeCombinations($id_lang);
+                $attributesResume = $p->getAttributesResume($id_lang);
             }
 
             if ($this->module_conf['mpn_type'] == 'reference' && !empty($product['reference'])) {
@@ -2189,58 +2189,39 @@ class GShoppingFlux extends Module
                 $product['pid'] = $product['id_product'];
             }
             $product['gid'] = $product['pid'];
-
-            //$xml_googleshopping = $this->getItemXML($product, $lang, $id_curr, $id_shop);
-            //fwrite($googleshoppingfile, $xml_googleshopping);
             $product['color'] = '';
             $product['material'] = '';
             $product['pattern'] = '';
             $product['size'] = '';
-
-            if (count($attributeCombinations) > 0 && $this->module_conf['export_attributes'] == 1) {
+            if (count($attributesResume) > 0 && $this->module_conf['export_attributes'] == 1) {
                 $original_product = $product;
-                $attr = array();
-                foreach ($attributeCombinations as $a => $attribute) {
-                    $attr[$attribute['id_product_attribute']][$attribute['id_attribute_group']] = $attribute;
-                }
-
+                $categories_value = $this->categories_values[$product['id_gcategory']];
                 $combinum = 0;
-                foreach ($attr as $id_attr => $v) {
+                foreach ($attributesResume as $productCombination) {
                     $product = $original_product;
-                    foreach ($v as $k => $a) {
-                        foreach ($this->categories_values[$product['id_gcategory']]['gcat_color[]'] as $c) {
-                            if ($k == $c) {
-                                $product['color'] = $a['attribute_name'];
-                            }
+                    $attributes = $p->getAttributeCombinationsById($productCombination['id_product_attribute'], $id_lang);
+                    foreach ($attributes as $a) {
+                        if (in_array($a['id_attribute_group'], $categories_value['gcat_color'])) {
+                            $product['color'] = $a['attribute_name'];
                         }
-                        foreach ($this->categories_values[$product['id_gcategory']]['gcat_material[]'] as $c) {
-                            if ($k == $c) {
-                                $product['material'] = $a['attribute_name'];
-                            }
+                        if (in_array($a['id_attribute_group'], $categories_value['gcat_material'])) {
+                            $product['material'] = $a['attribute_name'];
                         }
-                        foreach ($this->categories_values[$product['id_gcategory']]['gcat_pattern[]'] as $c) {
-                            if ($k == $c) {
-                                $product['pattern'] = $a['attribute_name'];
-                            }
+                        if (in_array($a['id_attribute_group'], $categories_value['gcat_pattern'])) {
+                            $product['pattern'] = $a['attribute_name'];
                         }
-                        foreach ($this->categories_values[$product['id_gcategory']]['gcat_size[]'] as $c) {
-                            if ($k == $c) {
-                                $product['size'] = $a['attribute_name'];
-                            }
-                        }
-                        foreach ($a as $k => $v) {
-                            if ($k === 'weight') {
-                                $product[$k] += $v;
-                            } else {
-                                $product[$k] = $v;
-                            }
+                        if (in_array($a['id_attribute_group'], $categories_value['gcat_size'])) {
+                            $product['size'] = $a['attribute_name'];
                         }
                     }
-
                     ++$combinum;
+                    $product['ean13'] = (!empty($a['ean13']) ? $a['ean13'] : $product['ean13']);
+                    $product['upc'] = (!empty($a['upc']) ? $a['upc'] : $product['upc']);
+                    $product['supplier_reference'] = (!empty($a['supplier_reference']) ? $a['supplier_reference'] : $product['supplier_reference']);
+                    $product['weight'] += $a['weight'];
                     $product['item_group_id'] = $product['pid'];
                     $product['gid'] = $product['pid'].'-'.$combinum;
-                    $xml_googleshopping = $this->getItemXML($product, $lang, $id_curr, $id_shop, $id_attr);
+                    $xml_googleshopping = $this->getItemXML($product, $lang, $id_curr, $id_shop, $productCombination['id_product_attribute']);
                     fwrite($googleshoppingfile, $xml_googleshopping);
                 }
                 unset($original_product);
