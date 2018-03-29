@@ -97,7 +97,8 @@ class GShoppingFlux extends Module
                     || !Configuration::updateValue('GS_EXPORT_NAP', '0', false, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_QUANTITY', '1', false, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_FEATURED_PRODUCTS', '1', false, (int) $shop_group_id, (int) $shop_id)
-                    || !Configuration::updateValue('GS_GEN_FILE_IN_ROOT', '1', false, (int) $shop_group_id, (int) $shop_id)) {
+                    || !Configuration::updateValue('GS_GEN_FILE_IN_ROOT', '1', false, (int) $shop_group_id, (int) $shop_id)
+                    || !Configuration::updateValue('GS_FILE_PREFIX', '', true, (int) $shop_group_id, (int) $shop_id)) {
                     return false;
                 }
             }
@@ -209,7 +210,7 @@ class GShoppingFlux extends Module
         }
 
         if ($delete_params) {
-            if (!$this->uninstallDB() || !Configuration::deleteByName('GS_PRODUCT_TYPE') || !Configuration::deleteByName('GS_DESCRIPTION') || !Configuration::deleteByName('GS_SHIPPING_MODE') || !Configuration::deleteByName('GS_SHIPPING_PRICE') || !Configuration::deleteByName('GS_SHIPPING_COUNTRY') || !Configuration::deleteByName('GS_SHIPPING_COUNTRIES') || !Configuration::deleteByName('GS_CARRIERS_EXCLUDED') || !Configuration::deleteByName('GS_IMG_TYPE') || !Configuration::deleteByName('GS_MPN_TYPE') || !Configuration::deleteByName('GS_GENDER') || !Configuration::deleteByName('GS_AGE_GROUP') || !Configuration::deleteByName('GS_ATTRIBUTES') || !Configuration::deleteByName('GS_COLOR') || !Configuration::deleteByName('GS_MATERIAL') || !Configuration::deleteByName('GS_PATTERN') || !Configuration::deleteByName('GS_SIZE') || !Configuration::deleteByName('GS_EXPORT_MIN_PRICE') || !Configuration::deleteByName('GS_NO_GTIN') || !Configuration::deleteByName('GS_NO_BRAND') || !Configuration::deleteByName('GS_ID_EXISTS_TAG') || !Configuration::deleteByName('GS_EXPORT_NAP') || !Configuration::deleteByName('GS_QUANTITY') || !Configuration::deleteByName('GS_FEATURED_PRODUCTS') || !Configuration::deleteByName('GS_GEN_FILE_IN_ROOT')) {
+            if (!$this->uninstallDB() || !Configuration::deleteByName('GS_PRODUCT_TYPE') || !Configuration::deleteByName('GS_DESCRIPTION') || !Configuration::deleteByName('GS_SHIPPING_MODE') || !Configuration::deleteByName('GS_SHIPPING_PRICE') || !Configuration::deleteByName('GS_SHIPPING_COUNTRY') || !Configuration::deleteByName('GS_SHIPPING_COUNTRIES') || !Configuration::deleteByName('GS_CARRIERS_EXCLUDED') || !Configuration::deleteByName('GS_IMG_TYPE') || !Configuration::deleteByName('GS_MPN_TYPE') || !Configuration::deleteByName('GS_GENDER') || !Configuration::deleteByName('GS_AGE_GROUP') || !Configuration::deleteByName('GS_ATTRIBUTES') || !Configuration::deleteByName('GS_COLOR') || !Configuration::deleteByName('GS_MATERIAL') || !Configuration::deleteByName('GS_PATTERN') || !Configuration::deleteByName('GS_SIZE') || !Configuration::deleteByName('GS_EXPORT_MIN_PRICE') || !Configuration::deleteByName('GS_NO_GTIN') || !Configuration::deleteByName('GS_NO_BRAND') || !Configuration::deleteByName('GS_ID_EXISTS_TAG') || !Configuration::deleteByName('GS_EXPORT_NAP') || !Configuration::deleteByName('GS_QUANTITY') || !Configuration::deleteByName('GS_FEATURED_PRODUCTS') || !Configuration::deleteByName('GS_GEN_FILE_IN_ROOT') || !Configuration::deleteByName('GS_FILE_PREFIX')) {
                 return false;
             }
         }
@@ -352,6 +353,7 @@ class GShoppingFlux extends Module
             $updated &= Configuration::updateValue('GS_QUANTITY', (bool) Tools::getValue('quantity'), false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_FEATURED_PRODUCTS', (bool) Tools::getValue('featured_products'), false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_GEN_FILE_IN_ROOT', (bool) Tools::getValue('gen_file_in_root'), false, (int) $shop_group_id, (int) $shop_id);
+            $updated &= Configuration::updateValue('GS_FILE_PREFIX', trim(Tools::getValue('file_prefix')), false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_AUTOEXPORT_ON_SAVE', (bool) Tools::getValue('autoexport_on_save'), false, (int) $shop_group_id, (int) $shop_id);
 
             if (!$updated) {
@@ -931,6 +933,13 @@ class GShoppingFlux extends Module
                         ),
                     ),
                     array(
+                      'type' => 'text',
+                      'label' => $this->l('prefix for output filename'),
+                      'name' => 'file_prefix',
+                      'class' => 'fixed-width-lg',
+                      'desc' => $this->l('Allows you to prefix feed filename. Makes it a little harder for other to guess your feed names'),
+                    ),
+                    array(
                         'type' => 'switch',
                         'label' => $this->l('Automatic export on saves?'),
                         'name' => 'autoexport_on_save',
@@ -991,6 +1000,7 @@ class GShoppingFlux extends Module
         $featured_products = true;
         $gen_file_in_root = true;
         $autoexport_on_save = true;
+        $file_prefix = "";
 
         foreach (Language::getLanguages(false) as $lang) {
             $product_type[$lang['id_lang']] = Configuration::get('GS_PRODUCT_TYPE', $lang['id_lang'], $shop_group_id, $shop_id);
@@ -1021,6 +1031,7 @@ class GShoppingFlux extends Module
         $featured_products &= (bool) Configuration::get('GS_FEATURED_PRODUCTS', 0, $shop_group_id, $shop_id);
         $gen_file_in_root &= (bool) Configuration::get('GS_GEN_FILE_IN_ROOT', 0, $shop_group_id, $shop_id);
         $autoexport_on_save &= (bool) Configuration::get('GS_AUTOEXPORT_ON_SAVE', 0, $shop_group_id, $shop_id);
+        $file_prefix = Configuration::get('GS_FILE_PREFIX', 0, $shop_group_id, $shop_id);
 
         return array(
             'product_type[]' => $product_type,
@@ -1048,6 +1059,7 @@ class GShoppingFlux extends Module
             'quantity' => (int) $quantity,
             'featured_products' => (int) $featured_products,
             'gen_file_in_root' => (int) $gen_file_in_root,
+            'file_prefix' => $file_prefix,
             'autoexport_on_save' => (int) $autoexport_on_save,
         );
     }
@@ -2035,6 +2047,9 @@ class GShoppingFlux extends Module
 
     private function _getOutputFileName($lang, $curr, $shop)
     {
+        if (Configuration::get('GS_FILE_PREFIX', '', $shop_group_id, $shop_id)) {
+            return Configuration::get('GS_FILE_PREFIX', '', $shop_group_id, $shop_id).'_googleshopping-s'.$shop.'-'.$lang.'-'.$curr.'.xml';
+        }
         return 'googleshopping-s'.$shop.'-'.$lang.'-'.$curr.'.xml';
     }
 
