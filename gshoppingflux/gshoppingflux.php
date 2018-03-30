@@ -2275,6 +2275,8 @@ class GShoppingFlux extends Module
         // Get module configuration for this shop
         if (!$combination) {
             $product['quantity'] = StockAvailable::getQuantityAvailableByProduct($product['id_product'], 0, $id_shop);
+        } else {
+            $product['quantity'] = StockAvailable::getQuantityAvailableByProduct($product['id_product'], $combination, $id_shop);
         }
 
         // Exclude non-available products
