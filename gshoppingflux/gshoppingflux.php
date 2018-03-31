@@ -823,6 +823,7 @@ class GShoppingFlux extends Module
                                 'label' => $this->l('Disabled'),
                             ),
                         ),
+                        'desc' => $this->l('Allow export of products, that no not have a GTIN code (EAN13/UPC)'),
                     ),
                     array(
                         'type' => 'switch',
@@ -841,6 +842,7 @@ class GShoppingFlux extends Module
                                 'label' => $this->l('Disabled'),
                             ),
                         ),
+                        'desc' => $this->l('Allow export of products, that no not have a brand (Manufacturer)'),
                     ),
                     array(
                         'type' => 'switch',
@@ -859,6 +861,7 @@ class GShoppingFlux extends Module
                                 'label' => $this->l('Disabled'),
                             ),
                         ),
+                        'desc' => $this->l('If your product is new (which you submit through the condition attribute) and it doesn’t have a gtin and brand or mpn and brand.').' <a href="https://support.google.com/merchants/answer/6324478?hl=en" target="_blank">'.$this->l('identifier_exists: Definition').'</a>',
                     ),
                     array(
                         'type' => 'switch',
@@ -1756,7 +1759,7 @@ class GShoppingFlux extends Module
             $cron_desc .= ' '.$this->l('Please note that as multishop feature is active, you\'ll have to install several CRON tasks, one for each shop.');
         }
 
-        $form_desc = $this->l('Report bugs and find help on forum: <a href="http://www.prestashop.com/forums/topic/381026-free-module-google-shopping-flux/" target="_blank">http://www.prestashop.com/forums/topic/381026-free-module-google-shopping-flux/</a>');
+        $form_desc = $this->l('Report bugs and find help on forum: <a href="https://www.prestashop.com/forums/topic/661366-free-module-google-shopping-flux/" target="_blank">https://www.prestashop.com/forums/topic/661366-free-module-google-shopping-flux/</a>');
         $helper->fields_value = array(
             'info_files' => $output,
             'info_cron' => $info_cron,
