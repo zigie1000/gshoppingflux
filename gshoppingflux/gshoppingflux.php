@@ -2366,7 +2366,7 @@ class GShoppingFlux extends Module
         $cover_key = array_search('1', array_column($images, 'cover'));
         foreach ($images as $im_key => $im) {
             $image = $this->context->link->getImageLink($product['link_rewrite'], $product['id_product'].'-'.$im['id_image'], $image_type);
-            $image = preg_replace('*http://'.Tools::getHttpHost().'/*', $this->uri, $image);
+            $image = preg_replace('*http://'.'/*', $this->uri, $image);
             if ($im['cover'] == 1 || ($cover_key === false && $im_key == 0)) {
                 $xml_googleshopping .= '<g:image_link><![CDATA['.$image.']]></g:image_link>'."\n";
             } else {
