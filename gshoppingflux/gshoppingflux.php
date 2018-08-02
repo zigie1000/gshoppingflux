@@ -2166,13 +2166,15 @@ class GShoppingFlux extends Module
             .'INNER JOIN '._DB_PREFIX_.'gshoppingflux gc ON gc.id_gcategory = ps.id_category_default '
             .'INNER JOIN '._DB_PREFIX_.'gshoppingflux_lc glc ON glc.`id_glang` = '.$id_lang.' '
             .'INNER JOIN '._DB_PREFIX_.'gshoppingflux_lang gl ON gl.id_gcategory = ps.id_category_default '
-            .'WHERE `p`.`price` >= 0 AND `p`.`active` = 1 AND `c`.`active` = 1 AND `gc`.`export` = 1 '
+            .'WHERE `p`.`price` >= 0 AND `c`.`active` = 1 AND `gc`.`export` = 1 '
             .'AND `pl`.`id_lang` = '.$id_lang.' AND `gl`.`id_lang` = '.$id_lang;
 
         // Multishops filter
         if (Configuration::get('PS_MULTISHOP_FEATURE_ACTIVE') && count(Shop::getShops(true, null, true)) > 1) {
-            $sql .= ' AND `gc`.`id_shop` = '.$id_shop.' AND `pl`.`id_shop` = '.$id_shop.' AND `ps`.`id_shop` = '.$id_shop.' AND `gl`.`id_shop` = '.$id_shop;
-        }
+            $sql .= ' AND `ps`.`active` = 1 AND `gc`.`id_shop` = '.$id_shop.' AND `pl`.`id_shop` = '.$id_shop.' AND `ps`.`id_shop` = '.$id_shop.' AND `gl`.`id_shop` = '.$id_shop;
+        } else {
+            $sql .= ' AND `p`.`active` = 1';
+	}
 
         // Check EAN13/UPC
         if ($this->module_conf['no_gtin'] != 1) {
