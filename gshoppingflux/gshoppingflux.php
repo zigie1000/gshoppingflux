@@ -2050,8 +2050,8 @@ class GShoppingFlux extends Module
 
     private function _getOutputFileName($lang, $curr, $shop)
     {
-        if (Configuration::get('GS_FILE_PREFIX', '', $shop_group_id, $shop_id)) {
-            return Configuration::get('GS_FILE_PREFIX', '', $shop_group_id, $shop_id).'_googleshopping-s'.$shop.'-'.$lang.'-'.$curr.'.xml';
+        if (Configuration::get('GS_FILE_PREFIX', '', $this->context->shop->id_shop_group, $this->context->shop->id)) {
+            return Configuration::get('GS_FILE_PREFIX', '', $this->context->shop->id_shop_group, $this->context->shop->id).'_googleshopping-s'.$shop.'-'.$lang.'-'.$curr.'.xml';
         }
         return 'googleshopping-s'.$shop.'-'.$lang.'-'.$curr.'.xml';
     }
