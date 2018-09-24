@@ -2572,15 +2572,15 @@ class GShoppingFlux extends Module
             $xml_googleshopping .= '</g:shipping>' . "\n";
         } elseif ($this->module_conf['shipping_mode'] == 'full' && count($this->module_conf['shipping_countries[]'])) {
             // Init Cart for calculate shipping costs
-            $cart = new Cart();
+            $cart = $this->context->cart;
             $cart->id_currency = $this->context->currency->id;
             $cart->id_lang = $this->context->language->id;
-            $cart->add();
-            $cart->updateQty(1, $product['id_product']);
+            //$cart->add();
+            $cart->updateQty(1, $product['id_product'], $combination);
 
             $countries = [];
             if (in_array('all', $this->module_conf['shipping_countries[]'])) {
-                $countries = Country::getCountries($this->context->language->id, TRUE);
+                $countries = Country::getCountries($this->context->language->id, true);
             } else {
                 foreach ($this->module_conf['shipping_countries[]'] as $id_country) {
                     $countries[] = (new Country((int)$id_country))->getFields();
@@ -2619,9 +2619,8 @@ class GShoppingFlux extends Module
                     $xml_googleshopping .= '</g:shipping>' . "\n";
                 }
             }
-
-            $cart->delete();
-            unset($cart);
+            $cart->deleteProduct($product['id_product'], $combination);
+            //unset($cart);
         }
 
         // Shipping weight
