@@ -1,6 +1,6 @@
 # Google Shopping Flux
 
-Prestashop Module for Google Merchant center. Generates a XML feed, so that you can use Google Mercahnt center to advertise for your products.
+Prestashop Module for Google Merchant center. Generates a XML feed, so that you can use Google Merchant Center to advertise for your products.
 
 This feed is also accepted by:
 - [Shopalike](https://visual-meta.com/en/about-us/online-shopping-portals)
