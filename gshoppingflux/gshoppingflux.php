@@ -2235,6 +2235,7 @@ class GShoppingFlux extends Module
                         }
                     }
                     ++$combinum;
+                    $product['reference'] = (!empty($a['reference']) ? $a['reference'] : $product['reference']);
                     $product['ean13'] = (!empty($a['ean13']) ? $a['ean13'] : $product['ean13']);
                     $product['upc'] = (!empty($a['upc']) ? $a['upc'] : $product['upc']);
                     $product['supplier_reference'] = (!empty($a['supplier_reference']) ? $a['supplier_reference'] : $product['supplier_reference']);
