@@ -649,7 +649,7 @@ class GShoppingFlux extends Module
                     ),
                     array(
                         'type' => 'select',
-                        'multiple' => TRUE,
+                        'multiple' => true,
                         'label' => $this->l('Shipping countries'),
                         'name' => 'shipping_countries[]',
                         'options' => array(
@@ -658,7 +658,7 @@ class GShoppingFlux extends Module
                                     'id_country' => 'all',
                                     'name' => $this->l('All'),
                                 ),
-                            ), Country::getCountries($this->context->language->id, TRUE)),
+                            ), Country::getCountries($this->context->language->id, true)),
                             'id' => 'id_country',
                             'name' => 'name',
                         ),
@@ -666,7 +666,7 @@ class GShoppingFlux extends Module
                     ),
                     array(
                         'type' => 'select',
-                        'multiple' => TRUE,
+                        'multiple' => true,
                         'label' => $this->l('Carriers to exclude'),
                         'name' => 'carriers_excluded[]',
                         'options' => array(
@@ -2174,7 +2174,7 @@ class GShoppingFlux extends Module
             $sql .= ' AND `ps`.`active` = 1 AND `gc`.`id_shop` = '.$id_shop.' AND `pl`.`id_shop` = '.$id_shop.' AND `ps`.`id_shop` = '.$id_shop.' AND `gl`.`id_shop` = '.$id_shop;
         } else {
             $sql .= ' AND `p`.`active` = 1';
-	}
+        }
 
         // Check EAN13/UPC
         if ($this->module_conf['no_gtin'] != 1) {
@@ -2213,7 +2213,7 @@ class GShoppingFlux extends Module
             $product['material'] = '';
             $product['pattern'] = '';
             $product['size'] = '';
-            if (count($attributesResume) > 0 && $this->module_conf['export_attributes'] == 1) {
+            if (is_array($attributesResume) > 0 && $this->module_conf['export_attributes'] == 1) {
                 $original_product = $product;
                 $categories_value = $this->categories_values[$product['id_gcategory']];
                 $combinum = 0;
@@ -2596,7 +2596,7 @@ class GShoppingFlux extends Module
             unset($countries);
 
             foreach ($zones as $id_zone => $countries) {
-                $carriers = Carrier::getCarriersForOrder($id_zone, NULL, $cart);
+                $carriers = Carrier::getCarriersForOrder($id_zone, null, $cart);
                 $carriers_excluded = $this->module_conf['carriers_excluded[]'];
 
                 if (!empty($carriers_excluded) && !in_array('no', $carriers_excluded)) {
@@ -2605,7 +2605,7 @@ class GShoppingFlux extends Module
                     });
                 }
                 $shipping = array_reduce($carriers, function ($a, $b) {
-                    if ($a === NULL) {
+                    if ($a === null) {
                         return $b;
                     } else {
                         return ($a['price'] > $b['price']) ? $b : $a;
@@ -2675,6 +2675,8 @@ class GShoppingFlux extends Module
         }
         if (!empty($ta['fragment'])) {
             $ta['fragment']='#'.$ta['fragment'];
+        } else {
+            $ta['fragment'] = "";
         }
         return implode('', array($ta['scheme'], $ta['user'], $ta['pass'], $ta['host'], $ta['port'], $ta['path'], $ta['query'], $ta['fragment']));
     }
