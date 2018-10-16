@@ -2200,15 +2200,7 @@ class GShoppingFlux extends Module
             if ($this->module_conf['export_attributes'] == 1) {
                 $attributesResume = $p->getAttributesResume($id_lang);
             }
-
-            if ($this->module_conf['mpn_type'] == 'reference' && !empty($product['reference'])) {
-                $product['pid'] = $product['reference'];
-            } elseif ($this->module_conf['mpn_type'] == 'supplier_reference' && !empty($product['supplier_reference'])) {
-                $product['pid'] = $product['supplier_reference'];
-            } else {
-                $product['pid'] = $product['id_product'];
-            }
-            $product['gid'] = $product['pid'];
+            $product['gid'] = $product['id_product'];
             $product['color'] = '';
             $product['material'] = '';
             $product['pattern'] = '';
@@ -2217,6 +2209,7 @@ class GShoppingFlux extends Module
                 $original_product = $product;
                 $categories_value = $this->categories_values[$product['id_gcategory']];
                 $combinum = 0;
+
                 foreach ($attributesResume as $productCombination) {
                     $product = $original_product;
                     $attributes = $p->getAttributeCombinationsById($productCombination['id_product_attribute'], $id_lang);
@@ -2240,8 +2233,8 @@ class GShoppingFlux extends Module
                     $product['upc'] = (!empty($a['upc']) ? $a['upc'] : $product['upc']);
                     $product['supplier_reference'] = (!empty($a['supplier_reference']) ? $a['supplier_reference'] : $product['supplier_reference']);
                     $product['weight'] += $a['weight'];
-                    $product['item_group_id'] = $product['pid'];
-                    $product['gid'] = $product['pid'].'-'.$combinum;
+                    $product['item_group_id'] = $product['id_product'];
+                    $product['gid'] = $product['id_product'].'-'.$productCombination['id_product_attribute'];
                     $xml_googleshopping = $this->getItemXML($product, $lang, $id_curr, $id_shop, $productCombination['id_product_attribute']);
                     fwrite($googleshoppingfile, $xml_googleshopping);
                 }
