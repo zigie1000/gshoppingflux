@@ -624,7 +624,7 @@ class GShoppingFlux extends Module
                                 ),
                                 array(
                                     'id_mode' => 'full',
-                                    'name' => $this->l('Generate shipping costs in several countries'),
+                                    'name' => $this->l('Generate shipping costs in several countries [EXPERIMENTAL]'),
                                 ),
                             ),
                             'id' => 'id_mode',
