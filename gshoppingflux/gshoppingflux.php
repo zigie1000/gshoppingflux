@@ -2576,7 +2576,10 @@ class GShoppingFlux extends Module
             $cart = $this->context->cart;
             $cart->id_currency = $this->context->currency->id;
             $cart->id_lang = $this->context->language->id;
-            //$cart->add();
+            if (!Validate::isLoadedObject($cart)) {
+                $cart->add();
+            }
+
             $cart->updateQty(1, $product['id_product'], $combination);
 
             $countries = [];
