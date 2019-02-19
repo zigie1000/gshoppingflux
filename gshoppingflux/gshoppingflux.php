@@ -2574,16 +2574,7 @@ class GShoppingFlux extends Module
             $xml_googleshopping .= "\t" . '<g:price>' . Tools::convertPriceFull($this->module_conf['shipping_price'], null, $currency) . ' ' . $currency->iso_code . '</g:price>' . "\n";
             $xml_googleshopping .= '</g:shipping>' . "\n";
         } elseif ($this->module_conf['shipping_mode'] == 'full' && count($this->module_conf['shipping_countries[]'])) {
-            // Init Cart for calculate shipping costs
-            $cart = $this->context->cart;
-            $cart->id_currency = $this->context->currency->id;
-            $cart->id_lang = $this->context->language->id;
-            if (!Validate::isLoadedObject($cart)) {
-                $cart->add();
-            }
-
-            $cart->updateQty(1, $product['id_product'], $combination);
-
+            $this->id_address_delivery = 0;
             $countries = [];
             if (in_array('all', $this->module_conf['shipping_countries[]'])) {
                 $countries = Country::getCountries($this->context->language->id, true);
@@ -2601,14 +2592,35 @@ class GShoppingFlux extends Module
             unset($countries);
 
             foreach ($zones as $id_zone => $countries) {
-                $carriers = Carrier::getCarriersForOrder($id_zone, null, $cart);
+                $carriers = Carrier::getCarriers($this->context->language->id, true, false, $id_zone, null, 5);
                 $carriers_excluded = $this->module_conf['carriers_excluded[]'];
+                $carriers_product = $p->getCarriers();
+                if (!empty($carriers_product)) {
+                    foreach ($carriers as $index => $carrier) {
+                        if (false === array_search($carrier['id_carrier'], array_column($carriers_product, 'id_carrier'), true)) {
+                            unset($carriers[$index]);
+                        }
+                    }
+                }
 
                 if (!empty($carriers_excluded) && !in_array('no', $carriers_excluded)) {
                     $carriers = array_filter($carriers, function ($carrier) use ($carriers_excluded) {
                         return !in_array($carrier['id_carrier'], $carriers_excluded);
                     });
                 }
+                foreach ($carriers as $index => $carrier) {
+                    $carrier = is_object($carrier) ? $carrier : new Carrier($carrier['id_carrier']);
+                    $carrier_tax = Tax::getCarrierTaxRate((int)$carrier->id);
+
+                    if ($carrier->getShippingMethod() == Carrier::SHIPPING_METHOD_WEIGHT) {
+                        $shipping = $carrier->getDeliveryPriceByWeight($product['weight'], $id_zone);
+                    } else {
+                        $shipping = $carrier->getDeliveryPriceByPrice($product['price'], $id_zone);
+                    }
+                    $shipping *= 1 + ($carrier_tax / 100);
+                    $carriers[$index]['price'] = $shipping;
+                }
+
                 $shipping = array_reduce($carriers, function ($a, $b) {
                     if ($a === null) {
                         return $b;
@@ -2625,8 +2637,6 @@ class GShoppingFlux extends Module
                     $xml_googleshopping .= '</g:shipping>' . "\n";
                 }
             }
-            $cart->deleteProduct($product['id_product'], $combination);
-            //unset($cart);
         }
 
         // Shipping weight
@@ -2677,8 +2687,8 @@ class GShoppingFlux extends Module
         }
         if (!empty($ta['query'])) {
             $ta['query']='?'.$ta['query'];
-	} else {
-	    $ta['query'] = "";
+        } else {
+            $ta['query'] = "";
         }
         if (!empty($ta['fragment'])) {
             $ta['fragment']='#'.$ta['fragment'];
