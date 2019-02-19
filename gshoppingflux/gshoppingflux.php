@@ -51,6 +51,8 @@ class GShoppingFlux extends Module
             $this->uri = ToolsCore::getCurrentUrlProtocolPrefix().$this->context->shop->domain.$this->context->shop->physical_uri;
         }
         $this->categories_values = array();
+
+        $this->ps_stock_management = Configuration::get('PS_STOCK_MANAGEMENT');
     }
 
     public function install($delete_params = true)
@@ -2405,19 +2407,26 @@ class GShoppingFlux extends Module
 
         // Product quantity & availability
         if (empty($this->categories_values[$product['category_default']]['gcat_avail'])) {
-            if ($this->module_conf['quantity'] == 1) {
+            if ($this->module_conf['quantity'] == 1 && $this->ps_stock_management) {
                 $xml_googleshopping .= '<g:quantity>'.$product['quantity'].'</g:quantity>'."\n";
             }
-
-            if ($product['quantity'] > 0 && $product['available_for_order']) {
-                $xml_googleshopping .= '<g:availability>in stock</g:availability>'."\n";
-            } elseif ($p->isAvailableWhenOutOfStock((int) $p->out_of_stock) && $product['available_for_order']) {
-                $xml_googleshopping .= '<g:availability>preorder</g:availability>'."\n";
+            if ($this->ps_stock_management) {
+                if ($product['quantity'] > 0 && $product['available_for_order']) {
+                    $xml_googleshopping .= '<g:availability>in stock</g:availability>'."\n";
+                } elseif ($p->isAvailableWhenOutOfStock((int) $p->out_of_stock) && $product['available_for_order']) {
+                    $xml_googleshopping .= '<g:availability>preorder</g:availability>'."\n";
+                } else {
+                    $xml_googleshopping .= '<g:availability>out of stock</g:availability>'."\n";
+                }
             } else {
-                $xml_googleshopping .= '<g:availability>out of stock</g:availability>'."\n";
+                if ($product['available_for_order']) {
+                    $xml_googleshopping .= '<g:availability>in stock</g:availability>'."\n";
+                } else {
+                    $xml_googleshopping .= '<g:availability>out of stock</g:availability>'."\n";
+                }
             }
         } else {
-            if ($this->module_conf['quantity'] == 1 && $product['quantity'] > 0) {
+            if ($this->module_conf['quantity'] == 1 && $product['quantity'] > 0 && $this->ps_stock_management) {
                 $xml_googleshopping .= '<g:quantity>'.$product['quantity'].'</g:quantity>'."\n";
             }
             $xml_googleshopping .= '<g:availability>'.$this->categories_values[$product['category_default']]['gcat_avail'].'</g:availability>'."\n";
