@@ -53,6 +53,7 @@ class GShoppingFlux extends Module
         $this->categories_values = array();
 
         $this->ps_stock_management = Configuration::get('PS_STOCK_MANAGEMENT');
+        $this->ps_shipping_handling = (float)Configuration::get('PS_SHIPPING_HANDLING');
     }
 
     public function install($delete_params = true)
@@ -2611,12 +2612,17 @@ class GShoppingFlux extends Module
                 foreach ($carriers as $index => $carrier) {
                     $carrier = is_object($carrier) ? $carrier : new Carrier($carrier['id_carrier']);
                     $carrier_tax = Tax::getCarrierTaxRate((int)$carrier->id);
-
-                    if ($carrier->getShippingMethod() == Carrier::SHIPPING_METHOD_WEIGHT) {
-                        $shipping = $carrier->getDeliveryPriceByWeight($product['weight'], $id_zone);
-                    } else {
-                        $shipping = $carrier->getDeliveryPriceByPrice($product['price'], $id_zone);
+                    $shipping = (float)0;
+                    if (isset($this->ps_shipping_handling) && $carrier->shipping_handling) {
+                        $shipping = (float)$this->ps_shipping_handling;
                     }
+                    if ($carrier->getShippingMethod() == Carrier::SHIPPING_METHOD_WEIGHT) {
+                        $shipping += $carrier->getDeliveryPriceByWeight($product['weight'], $id_zone);
+                    } else {
+                        $shipping += $carrier->getDeliveryPriceByPrice($product['price'], $id_zone);
+                    }
+                    $shipping += $p->additional_shipping_cost;
+                    
                     $shipping *= 1 + ($carrier_tax / 100);
                     $carriers[$index]['price'] = $shipping;
                 }
