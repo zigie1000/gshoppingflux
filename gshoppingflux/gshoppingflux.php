@@ -54,6 +54,7 @@ class GShoppingFlux extends Module
 
         $this->ps_stock_management = Configuration::get('PS_STOCK_MANAGEMENT');
         $this->ps_shipping_handling = (float)Configuration::get('PS_SHIPPING_HANDLING');
+        $this->free_shipping = Configuration::getMultiple(array('PS_SHIPPING_FREE_PRICE','PS_SHIPPING_FREE_WEIGHT'));
     }
 
     public function install($delete_params = true)
@@ -2592,10 +2593,14 @@ class GShoppingFlux extends Module
             }
             unset($countries);
 
+            $shipping_free_price = $this->free_shipping['PS_SHIPPING_FREE_PRICE'];
+            $shipping_free_weight = isset($this->free_shipping['PS_SHIPPING_FREE_WEIGHT']) ? $this->free_shipping['PS_SHIPPING_FREE_WEIGHT'] : 0;
+
             foreach ($zones as $id_zone => $countries) {
                 $carriers = Carrier::getCarriers($this->context->language->id, true, false, $id_zone, null, 5);
                 $carriers_excluded = $this->module_conf['carriers_excluded[]'];
                 $carriers_product = $p->getCarriers();
+
                 if (!empty($carriers_product)) {
                     foreach ($carriers as $index => $carrier) {
                         if (false === array_search($carrier['id_carrier'], array_column($carriers_product, 'id_carrier'), true)) {
@@ -2613,17 +2618,22 @@ class GShoppingFlux extends Module
                     $carrier = is_object($carrier) ? $carrier : new Carrier($carrier['id_carrier']);
                     $carrier_tax = Tax::getCarrierTaxRate((int)$carrier->id);
                     $shipping = (float)0;
-                    if (isset($this->ps_shipping_handling) && $carrier->shipping_handling) {
-                        $shipping = (float)$this->ps_shipping_handling;
+                    if (!(((float)$shipping_free_price > 0) && ($product['price'] >= (float)$shipping_free_price)) &&
+                    !(((float)$shipping_free_weight > 0) && ($product['weight'] >= (float)$shipping_free_weight))) {
+                        if (isset($this->ps_shipping_handling) && $carrier->shipping_handling) {
+                            $shipping = (float)$this->ps_shipping_handling;
+                        }
+                        if ($carrier->getShippingMethod() == Carrier::SHIPPING_METHOD_WEIGHT) {
+                            $shipping += $carrier->getDeliveryPriceByWeight($product['weight'], $id_zone);
+                        } else {
+                            $shipping += $carrier->getDeliveryPriceByPrice($product['price'], $id_zone);
+                        }
+                        $shipping += $p->additional_shipping_cost;
+
+                        $shipping *= 1 + ($carrier_tax / 100);
                     }
-                    if ($carrier->getShippingMethod() == Carrier::SHIPPING_METHOD_WEIGHT) {
-                        $shipping += $carrier->getDeliveryPriceByWeight($product['weight'], $id_zone);
-                    } else {
-                        $shipping += $carrier->getDeliveryPriceByPrice($product['price'], $id_zone);
-                    }
-                    $shipping += $p->additional_shipping_cost;
-                    
-                    $shipping *= 1 + ($carrier_tax / 100);
+
+
                     $carriers[$index]['price'] = $shipping;
                 }
 
