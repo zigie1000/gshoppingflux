@@ -2440,7 +2440,7 @@ class GShoppingFlux extends Module
         $no_tax = (!$use_tax ? true : false);
         $product['price'] = (float) $p->getPriceStatic($product['id_product'], $use_tax, $combination) * $currency->conversion_rate;
         $product['price_without_reduct'] = (float) $p->getPriceWithoutReduct($no_tax, $combination) * $currency->conversion_rate;
-        $product['price'] = $product['price'] = Tools::ps_round($product['price'], _PS_PRICE_DISPLAY_PRECISION_);
+        $product['price'] = Tools::ps_round($product['price'], _PS_PRICE_DISPLAY_PRECISION_);
         $product['price_without_reduct'] = Tools::ps_round($product['price_without_reduct'], _PS_PRICE_DISPLAY_PRECISION_);
         if ((float) ($product['price']) < (float) ($product['price_without_reduct'])) {
             $xml_googleshopping .= '<g:price>'.$product['price_without_reduct'].' '.$currency->iso_code.'</g:price>'."\n";
