@@ -2200,7 +2200,7 @@ class GShoppingFlux extends Module
         foreach ($products as $product) {
             $p = new Product($product['id_product'], true, $id_lang, $id_shop, $this->context);
 
-            $attributeCombinations = null;
+            $attributesResume = null;
             if ($this->module_conf['export_attributes'] == 1) {
                 $attributesResume = $p->getAttributesResume($id_lang);
             }
