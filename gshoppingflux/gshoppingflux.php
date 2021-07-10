@@ -2362,9 +2362,9 @@ class GShoppingFlux extends Module
 
         $xml_googleshopping .= '<item>'."\n";
         $xml_googleshopping .= '<g:id>'.$product['gid'].'</g:id>'."\n";
-        $xml_googleshopping .= '<title><![CDATA['.$title_crop.']]></title>'."\n";
-        $xml_googleshopping .= '<description><![CDATA['.$description_crop.']]></description>'."\n";
-        $xml_googleshopping .= '<link><![CDATA['.$this->linkencode($product_link).']]></link>'."\n";
+        $xml_googleshopping .= '<g:title><![CDATA['.$title_crop.']]></g:title>'."\n";
+        $xml_googleshopping .= '<g:description><![CDATA['.$description_crop.']]></g:description>'."\n";
+        $xml_googleshopping .= '<g:link><![CDATA['.$this->linkencode($product_link).']]></g:link>'."\n";
 
         // Image links
         $images = Image::getImages($lang['id_lang'], $product['id_product'], $combination);
