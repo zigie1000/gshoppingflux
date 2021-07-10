@@ -2642,6 +2642,26 @@ class GShoppingFlux extends Module
                     $carrier = is_object($carrier) ? $carrier : new Carrier($carrier['id_carrier']);
                     $carrier_tax = Tax::getCarrierTaxRate((int)$carrier->id);
                     $shipping = (float)0;
+
+                   if($carrier->max_width > 0 || $carrier->max_height > 0 || $carrier->max_depth > 0 || $carrier->max_weight > 0)
+                   {
+                      $carrierSizes = [(int) $carrier->max_width, (int) $carrier->max_height, (int) $carrier->max_depth];
+                      $productSizes = [(int) $product['width'], (int) $product['height'], (int) $product['depth']];
+                      rsort($carrierSizes, SORT_NUMERIC);
+                      rsort($productSizes, SORT_NUMERIC);
+                      if (($carrierSizes[0] > 0 && $carrierSizes[0] < $productSizes[0])
+                          || ($carrierSizes[1] > 0 && $carrierSizes[1] < $productSizes[1])
+                          || ($carrierSizes[2] > 0 && $carrierSizes[2] < $productSizes[2])
+                      ) {
+                          unset($carriers[$index]);
+                          break;
+                      }
+                      if($carrier->max_weight > 0 && $carrier->max_weight < $product['weight'])
+                      {
+                        unset($carriers[$index]);
+                        break;
+                      }
+                   }
                     if (!(((float)$shipping_free_price > 0) && ($product['price'] >= (float)$shipping_free_price)) &&
                     !(((float)$shipping_free_weight > 0) && ($product['weight'] >= (float)$shipping_free_weight))) {
                         if (isset($this->ps_shipping_handling) && $carrier->shipping_handling) {
