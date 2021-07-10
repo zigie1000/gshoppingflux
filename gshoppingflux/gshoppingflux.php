@@ -2307,7 +2307,7 @@ class GShoppingFlux extends Module
         }
 
         // Exclude non-available products
-        if ($this->module_conf['export_nap'] === 0 && $product['quantity'] < 1) {
+        if ($this->module_conf['export_nap'] === 0 && ($product['quantity'] < 1 || $product['available_for_order'] == 0)) {
             ++$this->nb_not_exported_products;
 
             return;
