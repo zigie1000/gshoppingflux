@@ -158,7 +158,7 @@ class GShoppingFlux extends Module
 
     public function initDb($id_shop)
     {
-        $languages = $this->context->controller->getLanguages();
+        $languages = Language::getLanguages(true, $id_shop);
         $id_lang = $this->context->language->id;
         $str = array();
 
