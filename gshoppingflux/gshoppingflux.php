@@ -96,6 +96,7 @@ class GShoppingFlux extends Module
                     || !Configuration::updateValue('GS_SIZE', '', false, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_EXPORT_MIN_PRICE', '0.00', false, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_NO_GTIN', '1', false, (int) $shop_group_id, (int) $shop_id)
+                    || !Configuration::updateValue('GS_SHIPPING_DIMENSION', '1', false, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_NO_BRAND', '1', false, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_ID_EXISTS_TAG', '1', false, (int) $shop_group_id, (int) $shop_id)
                     || !Configuration::updateValue('GS_EXPORT_NAP', '0', false, (int) $shop_group_id, (int) $shop_id)
@@ -214,7 +215,7 @@ class GShoppingFlux extends Module
         }
 
         if ($delete_params) {
-            if (!$this->uninstallDB() || !Configuration::deleteByName('GS_PRODUCT_TYPE') || !Configuration::deleteByName('GS_DESCRIPTION') || !Configuration::deleteByName('GS_SHIPPING_MODE') || !Configuration::deleteByName('GS_SHIPPING_PRICE') || !Configuration::deleteByName('GS_SHIPPING_COUNTRY') || !Configuration::deleteByName('GS_SHIPPING_COUNTRIES') || !Configuration::deleteByName('GS_CARRIERS_EXCLUDED') || !Configuration::deleteByName('GS_IMG_TYPE') || !Configuration::deleteByName('GS_MPN_TYPE') || !Configuration::deleteByName('GS_GENDER') || !Configuration::deleteByName('GS_AGE_GROUP') || !Configuration::deleteByName('GS_ATTRIBUTES') || !Configuration::deleteByName('GS_COLOR') || !Configuration::deleteByName('GS_MATERIAL') || !Configuration::deleteByName('GS_PATTERN') || !Configuration::deleteByName('GS_SIZE') || !Configuration::deleteByName('GS_EXPORT_MIN_PRICE') || !Configuration::deleteByName('GS_NO_GTIN') || !Configuration::deleteByName('GS_NO_BRAND') || !Configuration::deleteByName('GS_ID_EXISTS_TAG') || !Configuration::deleteByName('GS_EXPORT_NAP') || !Configuration::deleteByName('GS_QUANTITY') || !Configuration::deleteByName('GS_FEATURED_PRODUCTS') || !Configuration::deleteByName('GS_GEN_FILE_IN_ROOT') || !Configuration::deleteByName('GS_FILE_PREFIX')) {
+            if (!$this->uninstallDB() || !Configuration::deleteByName('GS_PRODUCT_TYPE') || !Configuration::deleteByName('GS_DESCRIPTION') || !Configuration::deleteByName('GS_SHIPPING_MODE') || !Configuration::deleteByName('GS_SHIPPING_PRICE') || !Configuration::deleteByName('GS_SHIPPING_COUNTRY') || !Configuration::deleteByName('GS_SHIPPING_COUNTRIES') || !Configuration::deleteByName('GS_CARRIERS_EXCLUDED') || !Configuration::deleteByName('GS_IMG_TYPE') || !Configuration::deleteByName('GS_MPN_TYPE') || !Configuration::deleteByName('GS_GENDER') || !Configuration::deleteByName('GS_AGE_GROUP') || !Configuration::deleteByName('GS_ATTRIBUTES') || !Configuration::deleteByName('GS_COLOR') || !Configuration::deleteByName('GS_MATERIAL') || !Configuration::deleteByName('GS_PATTERN') || !Configuration::deleteByName('GS_SIZE') || !Configuration::deleteByName('GS_EXPORT_MIN_PRICE') || !Configuration::deleteByName('GS_NO_GTIN') || !Configuration::deleteByName('GS_SHIPPING_DIMENSION') || !Configuration::deleteByName('GS_NO_BRAND') || !Configuration::deleteByName('GS_ID_EXISTS_TAG') || !Configuration::deleteByName('GS_EXPORT_NAP') || !Configuration::deleteByName('GS_QUANTITY') || !Configuration::deleteByName('GS_FEATURED_PRODUCTS') || !Configuration::deleteByName('GS_GEN_FILE_IN_ROOT') || !Configuration::deleteByName('GS_FILE_PREFIX')) {
                 return false;
             }
         }
@@ -351,6 +352,7 @@ class GShoppingFlux extends Module
             $updated &= Configuration::updateValue('GS_SIZE', implode(';', Tools::getValue('size')), false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_EXPORT_MIN_PRICE', (float) Tools::getValue('export_min_price'), false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_NO_GTIN', (bool) Tools::getValue('no_gtin'), false, (int) $shop_group_id, (int) $shop_id);
+            $updated &= Configuration::updateValue('GS_SHIPPING_DIMENSION', (bool) Tools::getValue('shipping_dimension'), false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_NO_BRAND', (bool) Tools::getValue('no_brand'), false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_ID_EXISTS_TAG', (bool) Tools::getValue('id_exists_tag'), false, (int) $shop_group_id, (int) $shop_id);
             $updated &= Configuration::updateValue('GS_EXPORT_NAP', (bool) Tools::getValue('export_nap'), false, (int) $shop_group_id, (int) $shop_id);
@@ -831,6 +833,25 @@ class GShoppingFlux extends Module
                     ),
                     array(
                         'type' => 'switch',
+                        'label' => $this->l('Export products shipping dimensions'),
+                        'name' => 'shipping_dimension',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on',
+                                'value' => 1,
+                                'label' => $this->l('Enabled'),
+                            ),
+                            array(
+                                'id' => 'active_off',
+                                'value' => 0,
+                                'label' => $this->l('Disabled'),
+                            ),
+                        ),
+                        'desc' => $this->l('Allow export of dimension for each products, if typed in product details'),
+                    ),
+                    array(
+                        'type' => 'switch',
                         'label' => $this->l('Export products with no brand'),
                         'name' => 'no_brand',
                         'is_bool' => true,
@@ -1000,6 +1021,7 @@ class GShoppingFlux extends Module
         $size = array();
         $export_min_price = 0;
         $no_gtin = true;
+        $shipping_dimension = true;
         $no_brand = true;
         $id_exists_tag = true;
         $export_nap = true;
@@ -1031,6 +1053,7 @@ class GShoppingFlux extends Module
         $size = explode(';', Configuration::get('GS_SIZE', 0, $shop_group_id, $shop_id));
         $export_min_price = (float) Configuration::get('GS_EXPORT_MIN_PRICE', 0, $shop_group_id, $shop_id);
         $no_gtin &= (bool) Configuration::get('GS_NO_GTIN', 0, $shop_group_id, $shop_id);
+        $shipping_dimension &= (bool) Configuration::get('GS_SHIPPING_DIMENSION', 0, $shop_group_id, $shop_id);
         $no_brand &= (bool) Configuration::get('GS_NO_BRAND', 0, $shop_group_id, $shop_id);
         $id_exists_tag &= (bool) Configuration::get('GS_ID_EXISTS_TAG', 0, $shop_group_id, $shop_id);
         $export_nap &= (bool) Configuration::get('GS_EXPORT_NAP', 0, $shop_group_id, $shop_id);
@@ -1060,6 +1083,7 @@ class GShoppingFlux extends Module
             'size[]' => $size,
             'export_min_price' => (float) $export_min_price,
             'no_gtin' => (int) $no_gtin,
+            'shipping_dimension' => (int) $shipping_dimension,
             'no_brand' => (int) $no_brand,
             'id_exists_tag' => (int) $id_exists_tag,
             'export_nap' => (int) $export_nap,
@@ -2659,7 +2683,12 @@ class GShoppingFlux extends Module
         if ($product['weight'] != '0') {
             $xml_googleshopping .= '<g:shipping_weight>'.number_format($product['weight'], 2, '.', '').' '.Configuration::get('PS_WEIGHT_UNIT').'</g:shipping_weight>'."\n";
         }
-
+        if($this->module_conf['shipping_dimension'] == 1 && ($product['width'] != 0 && $product['height'] != 0 && $product['depth'] != 0))
+        {
+          $xml_googleshopping .= '<g:shipping_length>'.number_format($product['depth'], 2, '.', '').' '.Configuration::get('PS_DIMENSION_UNIT').'</g:shipping_length>'."\n";
+          $xml_googleshopping .= '<g:shipping_width>'.number_format($product['depth'], 2, '.', '').' '.Configuration::get('PS_DIMENSION_UNIT').'</g:shipping_width>'."\n";
+          $xml_googleshopping .= '<g:shipping_height>'.number_format($product['height'], 2, '.', '').' '.Configuration::get('PS_DIMENSION_UNIT').'</g:shipping_height>'."\n";
+        }
         $xml_googleshopping .= '</item>'."\n\n";
 
         if ($combination) {
